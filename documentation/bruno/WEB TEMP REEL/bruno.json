@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "WEB TEMP REEL",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

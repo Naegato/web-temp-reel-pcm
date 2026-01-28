@@ -1,0 +1,32 @@
+meta {
+  name: REGISTER
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "test@test.test",
+    "password": "strongPassword123!",
+    "firstname": "John",
+    "lastname": "Doe"
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  const token = body?.access_token || null
+  
+  bru.setEnvVar('token', token)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
