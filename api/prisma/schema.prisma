@@ -37,9 +37,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  clientChats  Chat[]    @relation("ClientChats")
-  advisorChats Chat[]    @relation("AdvisorChats")
-  messages     Message[]
+  clientChats   Chat[]         @relation("ClientChats")
+  advisorChats  Chat[]         @relation("AdvisorChats")
+  messages      Message[]
+  notifications Notification[]
 
   @@index([role, isActive])
   @@map("users")
@@ -82,4 +83,17 @@ model Message {
   @@index([chatId, sentAt])
   @@index([authorId])
   @@map("messages")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
 }

@@ -29,4 +29,22 @@ export class UsersService {
       },
     });
   }
+
+  async findProfileById(id: string) {
+    const user = this.prismaService.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        firstname: true,
+        lastname: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return user ?? null;
+  }
 }

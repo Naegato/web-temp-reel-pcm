@@ -13,10 +13,12 @@ import { SignUpDto } from 'src/auth/dto/sign-up.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { SignInDto } from './dto/sign-in.dto';
 import { ApiOperation } from '@nestjs/swagger';
-
+import type { AuthRequestWithUser } from './types/auth-request.type';
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -48,7 +50,12 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  @ApiOperation({
+    summary: 'Get user profile',
+    description: 'Get the authenticated user profile without sensitive data.',
+  })
+  async profile(@Request() req: AuthRequestWithUser) {
+    // Maintenant req.user contient déjà toutes les données utilisateur
     return req.user;
   }
 }
