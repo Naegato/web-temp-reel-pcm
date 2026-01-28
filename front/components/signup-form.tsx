@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth/context';
 import { useRouter } from 'next/navigation';
-import { getRedirectUrl } from '@/lib/auth/client-utils';
+import { useRedirectUrl } from '@/lib/auth/client-utils';
 
 const schema = z.object({
   email: z.email(),
@@ -40,6 +40,7 @@ export function SignupForm({
 }: ComponentProps<'div'>) {
   const { register, isLoading } = useAuth();
   const router = useRouter();
+  const redirectUrl = useRedirectUrl();
 
   const form = useForm({
     defaultValues: {
@@ -67,8 +68,8 @@ export function SignupForm({
           });
           
           // Redirect to original page or home after successful registration
-          const redirectUrl = getRedirectUrl() || '/';
-          router.push(redirectUrl);
+          const targetUrl = redirectUrl || '/';
+          router.push(targetUrl);
         } else {
           toast.error('Registration failed', {
             description: result.error || 'Please check your information and try again.',

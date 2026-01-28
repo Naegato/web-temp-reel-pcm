@@ -27,7 +27,9 @@ export type AggregateChat = {
 export type ChatMinAggregateOutputType = {
   id: string | null
   status: $Enums.ChatStatus | null
+  subject: string | null
   createdAt: Date | null
+  updatedAt: Date | null
   takenAt: Date | null
   closedAt: Date | null
   clientId: string | null
@@ -37,7 +39,9 @@ export type ChatMinAggregateOutputType = {
 export type ChatMaxAggregateOutputType = {
   id: string | null
   status: $Enums.ChatStatus | null
+  subject: string | null
   createdAt: Date | null
+  updatedAt: Date | null
   takenAt: Date | null
   closedAt: Date | null
   clientId: string | null
@@ -47,7 +51,9 @@ export type ChatMaxAggregateOutputType = {
 export type ChatCountAggregateOutputType = {
   id: number
   status: number
+  subject: number
   createdAt: number
+  updatedAt: number
   takenAt: number
   closedAt: number
   clientId: number
@@ -59,7 +65,9 @@ export type ChatCountAggregateOutputType = {
 export type ChatMinAggregateInputType = {
   id?: true
   status?: true
+  subject?: true
   createdAt?: true
+  updatedAt?: true
   takenAt?: true
   closedAt?: true
   clientId?: true
@@ -69,7 +77,9 @@ export type ChatMinAggregateInputType = {
 export type ChatMaxAggregateInputType = {
   id?: true
   status?: true
+  subject?: true
   createdAt?: true
+  updatedAt?: true
   takenAt?: true
   closedAt?: true
   clientId?: true
@@ -79,7 +89,9 @@ export type ChatMaxAggregateInputType = {
 export type ChatCountAggregateInputType = {
   id?: true
   status?: true
+  subject?: true
   createdAt?: true
+  updatedAt?: true
   takenAt?: true
   closedAt?: true
   clientId?: true
@@ -162,7 +174,9 @@ export type ChatGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type ChatGroupByOutputType = {
   id: string
   status: $Enums.ChatStatus
+  subject: string | null
   createdAt: Date
+  updatedAt: Date
   takenAt: Date | null
   closedAt: Date | null
   clientId: string
@@ -193,7 +207,9 @@ export type ChatWhereInput = {
   NOT?: Prisma.ChatWhereInput | Prisma.ChatWhereInput[]
   id?: Prisma.StringFilter<"Chat"> | string
   status?: Prisma.EnumChatStatusFilter<"Chat"> | $Enums.ChatStatus
+  subject?: Prisma.StringNullableFilter<"Chat"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   takenAt?: Prisma.DateTimeNullableFilter<"Chat"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Chat"> | Date | string | null
   clientId?: Prisma.StringFilter<"Chat"> | string
@@ -206,7 +222,9 @@ export type ChatWhereInput = {
 export type ChatOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  subject?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   takenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   clientId?: Prisma.SortOrder
@@ -222,7 +240,9 @@ export type ChatWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ChatWhereInput[]
   NOT?: Prisma.ChatWhereInput | Prisma.ChatWhereInput[]
   status?: Prisma.EnumChatStatusFilter<"Chat"> | $Enums.ChatStatus
+  subject?: Prisma.StringNullableFilter<"Chat"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   takenAt?: Prisma.DateTimeNullableFilter<"Chat"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Chat"> | Date | string | null
   clientId?: Prisma.StringFilter<"Chat"> | string
@@ -235,7 +255,9 @@ export type ChatWhereUniqueInput = Prisma.AtLeast<{
 export type ChatOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  subject?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   takenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   clientId?: Prisma.SortOrder
@@ -251,7 +273,9 @@ export type ChatScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ChatScalarWhereWithAggregatesInput | Prisma.ChatScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Chat"> | string
   status?: Prisma.EnumChatStatusWithAggregatesFilter<"Chat"> | $Enums.ChatStatus
+  subject?: Prisma.StringNullableWithAggregatesFilter<"Chat"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Chat"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Chat"> | Date | string
   takenAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Chat"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Chat"> | Date | string | null
   clientId?: Prisma.StringWithAggregatesFilter<"Chat"> | string
@@ -261,7 +285,9 @@ export type ChatScalarWhereWithAggregatesInput = {
 export type ChatCreateInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   client: Prisma.UserCreateNestedOneWithoutClientChatsInput
@@ -272,7 +298,9 @@ export type ChatCreateInput = {
 export type ChatUncheckedCreateInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   clientId: string
@@ -283,7 +311,9 @@ export type ChatUncheckedCreateInput = {
 export type ChatUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   client?: Prisma.UserUpdateOneRequiredWithoutClientChatsNestedInput
@@ -294,7 +324,9 @@ export type ChatUpdateInput = {
 export type ChatUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -305,7 +337,9 @@ export type ChatUncheckedUpdateInput = {
 export type ChatCreateManyInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   clientId: string
@@ -315,7 +349,9 @@ export type ChatCreateManyInput = {
 export type ChatUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -323,7 +359,9 @@ export type ChatUpdateManyMutationInput = {
 export type ChatUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -343,7 +381,9 @@ export type ChatOrderByRelationAggregateInput = {
 export type ChatCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  subject?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   takenAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
@@ -353,7 +393,9 @@ export type ChatCountOrderByAggregateInput = {
 export type ChatMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  subject?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   takenAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
@@ -363,7 +405,9 @@ export type ChatMaxOrderByAggregateInput = {
 export type ChatMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  subject?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   takenAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
@@ -463,12 +507,12 @@ export type EnumChatStatusFieldUpdateOperationsInput = {
   set?: $Enums.ChatStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type ChatCreateNestedOneWithoutMessagesInput = {
@@ -488,7 +532,9 @@ export type ChatUpdateOneRequiredWithoutMessagesNestedInput = {
 export type ChatCreateWithoutClientInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   advisor?: Prisma.UserCreateNestedOneWithoutAdvisorChatsInput
@@ -498,7 +544,9 @@ export type ChatCreateWithoutClientInput = {
 export type ChatUncheckedCreateWithoutClientInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   advisorId?: string | null
@@ -518,7 +566,9 @@ export type ChatCreateManyClientInputEnvelope = {
 export type ChatCreateWithoutAdvisorInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   client: Prisma.UserCreateNestedOneWithoutClientChatsInput
@@ -528,7 +578,9 @@ export type ChatCreateWithoutAdvisorInput = {
 export type ChatUncheckedCreateWithoutAdvisorInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   clientId: string
@@ -567,7 +619,9 @@ export type ChatScalarWhereInput = {
   NOT?: Prisma.ChatScalarWhereInput | Prisma.ChatScalarWhereInput[]
   id?: Prisma.StringFilter<"Chat"> | string
   status?: Prisma.EnumChatStatusFilter<"Chat"> | $Enums.ChatStatus
+  subject?: Prisma.StringNullableFilter<"Chat"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Chat"> | Date | string
   takenAt?: Prisma.DateTimeNullableFilter<"Chat"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Chat"> | Date | string | null
   clientId?: Prisma.StringFilter<"Chat"> | string
@@ -593,7 +647,9 @@ export type ChatUpdateManyWithWhereWithoutAdvisorInput = {
 export type ChatCreateWithoutMessagesInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   client: Prisma.UserCreateNestedOneWithoutClientChatsInput
@@ -603,7 +659,9 @@ export type ChatCreateWithoutMessagesInput = {
 export type ChatUncheckedCreateWithoutMessagesInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   clientId: string
@@ -629,7 +687,9 @@ export type ChatUpdateToOneWithWhereWithoutMessagesInput = {
 export type ChatUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   client?: Prisma.UserUpdateOneRequiredWithoutClientChatsNestedInput
@@ -639,7 +699,9 @@ export type ChatUpdateWithoutMessagesInput = {
 export type ChatUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -649,7 +711,9 @@ export type ChatUncheckedUpdateWithoutMessagesInput = {
 export type ChatCreateManyClientInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   advisorId?: string | null
@@ -658,7 +722,9 @@ export type ChatCreateManyClientInput = {
 export type ChatCreateManyAdvisorInput = {
   id?: string
   status?: $Enums.ChatStatus
+  subject?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
   takenAt?: Date | string | null
   closedAt?: Date | string | null
   clientId: string
@@ -667,7 +733,9 @@ export type ChatCreateManyAdvisorInput = {
 export type ChatUpdateWithoutClientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advisor?: Prisma.UserUpdateOneWithoutAdvisorChatsNestedInput
@@ -677,7 +745,9 @@ export type ChatUpdateWithoutClientInput = {
 export type ChatUncheckedUpdateWithoutClientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -687,7 +757,9 @@ export type ChatUncheckedUpdateWithoutClientInput = {
 export type ChatUncheckedUpdateManyWithoutClientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -696,7 +768,9 @@ export type ChatUncheckedUpdateManyWithoutClientInput = {
 export type ChatUpdateWithoutAdvisorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   client?: Prisma.UserUpdateOneRequiredWithoutClientChatsNestedInput
@@ -706,7 +780,9 @@ export type ChatUpdateWithoutAdvisorInput = {
 export type ChatUncheckedUpdateWithoutAdvisorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -716,7 +792,9 @@ export type ChatUncheckedUpdateWithoutAdvisorInput = {
 export type ChatUncheckedUpdateManyWithoutAdvisorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumChatStatusFieldUpdateOperationsInput | $Enums.ChatStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   takenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -756,7 +834,9 @@ export type ChatCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.E
 export type ChatSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   status?: boolean
+  subject?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   takenAt?: boolean
   closedAt?: boolean
   clientId?: boolean
@@ -770,7 +850,9 @@ export type ChatSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type ChatSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   status?: boolean
+  subject?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   takenAt?: boolean
   closedAt?: boolean
   clientId?: boolean
@@ -782,7 +864,9 @@ export type ChatSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type ChatSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   status?: boolean
+  subject?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   takenAt?: boolean
   closedAt?: boolean
   clientId?: boolean
@@ -794,14 +878,16 @@ export type ChatSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type ChatSelectScalar = {
   id?: boolean
   status?: boolean
+  subject?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   takenAt?: boolean
   closedAt?: boolean
   clientId?: boolean
   advisorId?: boolean
 }
 
-export type ChatOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "createdAt" | "takenAt" | "closedAt" | "clientId" | "advisorId", ExtArgs["result"]["chat"]>
+export type ChatOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "subject" | "createdAt" | "updatedAt" | "takenAt" | "closedAt" | "clientId" | "advisorId", ExtArgs["result"]["chat"]>
 export type ChatInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   client?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   advisor?: boolean | Prisma.Chat$advisorArgs<ExtArgs>
@@ -827,7 +913,9 @@ export type $ChatPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     status: $Enums.ChatStatus
+    subject: string | null
     createdAt: Date
+    updatedAt: Date
     takenAt: Date | null
     closedAt: Date | null
     clientId: string
@@ -1260,7 +1348,9 @@ export interface Prisma__ChatClient<T, Null = never, ExtArgs extends runtime.Typ
 export interface ChatFieldRefs {
   readonly id: Prisma.FieldRef<"Chat", 'String'>
   readonly status: Prisma.FieldRef<"Chat", 'ChatStatus'>
+  readonly subject: Prisma.FieldRef<"Chat", 'String'>
   readonly createdAt: Prisma.FieldRef<"Chat", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Chat", 'DateTime'>
   readonly takenAt: Prisma.FieldRef<"Chat", 'DateTime'>
   readonly closedAt: Prisma.FieldRef<"Chat", 'DateTime'>
   readonly clientId: Prisma.FieldRef<"Chat", 'String'>

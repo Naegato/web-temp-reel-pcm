@@ -3,8 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { apiClient, type LoginCredentials, type RegisterCredentials } from '@/lib/api/client';
-
-const TOKEN_COOKIE_NAME = 'auth-token';
+import { TOKEN_COOKIE_NAME } from './constants';
 
 /**
  * Get cookie options with proper typing
@@ -105,6 +104,24 @@ export async function logoutAction() {
 }
 
 /**
+ * Server action for logout with redirect
+ * Use this to logout and redirect from server side
+ */
+export async function logoutAndRedirect() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete(TOKEN_COOKIE_NAME);
+    
+    // Force redirect to login
+    redirect('/login');
+  } catch (error) {
+    console.error('Logout and redirect error:', error);
+    // Still try to redirect even if cookie deletion fails
+    redirect('/login');
+  }
+}
+
+/**
  * Get current user token from cookie using Next.js cookies()
  */
 export async function getAuthToken(): Promise<string | null> {
@@ -124,8 +141,15 @@ export async function getAuthToken(): Promise<string | null> {
  */
 export async function isAuthenticated(): Promise<boolean> {
   try {
-    const { isAuthenticatedWithValidation } = await import('./token-validation');
-    return await isAuthenticatedWithValidation();
+    // Get token first
+    const token = await getAuthToken();
+    if (!token) {
+      return false;
+    }
+
+    // For actions, we'll do a simple token existence check
+    // The real validation happens in the proxy and server utils
+    return true;
   } catch (error) {
     console.error('Error checking authentication:', error);
     return false;

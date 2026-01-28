@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth/context';
 import { useRouter } from 'next/navigation';
-import { getRedirectUrl } from '@/lib/auth/client-utils';
+import { useRedirectUrl } from '@/lib/auth/client-utils';
 
 const schema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -34,6 +34,7 @@ export function LoginForm({
 }: ComponentProps<"div">) {
   const { login, isLoading } = useAuth();
   const router = useRouter();
+  const redirectUrl = useRedirectUrl();
 
   const form = useForm({
     defaultValues: {
@@ -55,8 +56,8 @@ export function LoginForm({
           });
           
           // Redirect to original page or home after successful login
-          const redirectUrl = getRedirectUrl() || '/';
-          router.push(redirectUrl);
+          const targetUrl = redirectUrl || '/';
+          router.push(targetUrl);
         } else {
           toast.error('Login failed', {
             description: result.error || 'Please check your credentials and try again.',

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chat System - Banking App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .auth-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+        }
+        
+        .chat-section {
+            display: none;
+        }
+        
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #fafafa;
+        }
+        
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        
+        .message.own {
+            background-color: #dcf8c6;
+            margin-left: 20px;
+        }
+        
+        .message.other {
+            background-color: #f1f1f1;
+            margin-right: 20px;
+        }
+        
+        .message .author {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .message .content {
+            margin-top: 3px;
+        }
+        
+        .message .time {
+            font-size: 0.8em;
+            color: #999;
+            float: right;
+        }
+        
+        input[type="text"], textarea, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .waiting-chats {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .chat-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .chat-item:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Système de Chat Bancaire - Test Client</h1>
+        
+        <div class="auth-section">
+            <h3>🔐 Authentification</h3>
+            <p><strong>Instructions:</strong></p>
+            <ol>
+                <li>Démarrez votre serveur API: <code>cd api && pnpm start:dev</code></li>
+                <li>Créez un compte via <code>POST /auth/register</code></li>
+                <li>Connectez-vous via <code>POST /auth/login</code> pour obtenir un token JWT</li>
+                <li>Collez le token ci-dessous et cliquez sur "Se connecter"</li>
+            </ol>
+            
+            <input type="text" id="tokenInput" placeholder="Coller votre token JWT ici..." style="width: 60%">
+            <button onclick="authenticate()">Se connecter</button>
+            <button onclick="disconnect()">Déconnecter</button>
+        </div>
+        
+        <div id="statusDiv" class="status disconnected">
+            ❌ Non connecté - Veuillez entrer un token JWT valide
+        </div>
+        
+        <div id="chatSection" class="chat-section">
+            
+            <!-- Section Création de Chat (CLIENT uniquement) -->
+            <div id="createChatSection">
+                <h3>➕ Créer un Nouveau Chat</h3>
+                <input type="text" id="chatSubject" placeholder="Sujet du chat (optionnel)">
+                <br>
+                <textarea id="initialMessage" placeholder="Message initial (optionnel)" rows="3" style="width: 100%"></textarea>
+                <br>
+                <button onclick="createChat()">Créer le chat</button>
+            </div>
+            
+            <!-- Section Chats en Attente (ADVISOR uniquement) -->
+            <div id="waitingChatsSection" style="display: none;">
+                <h3>⏳ Chats en Attente d'Assignation</h3>
+                <button onclick="getWaitingChats()">Actualiser</button>
+                <div id="waitingChatsList" class="waiting-chats">
+                    <p>Cliquez sur "Actualiser" pour voir les chats en attente...</p>
+                </div>
+            </div>
+            
+            <!-- Section Mes Chats -->
+            <div id="myChatsSection">
+                <h3>💬 Mes Chats</h3>
+                <button onclick="getMyChats()">Actualiser mes chats</button>
+                <div id="myChatsList" class="waiting-chats">
+                    <p>Cliquez sur "Actualiser mes chats"...</p>
+                </div>
+            </div>
+            
+            <!-- Section Chat Actuel -->
+            <div id="currentChatSection" style="display: none;">
+                <h3 id="currentChatTitle">💬 Chat</h3>
+                <div id="currentChatInfo"></div>
+                
+                <div id="messagesDiv" class="messages">
+                    <p style="color: #666; text-align: center;">Sélectionnez un chat pour voir les messages...</p>
+                </div>
+                
+                <div>
+                    <input type="text" id="messageInput" placeholder="Tapez votre message..." 
+                           style="width: 70%" onkeypress="handleKeyPress(event)">
+                    <button onclick="sendMessage()">Envoyer</button>
+                    <button onclick="leaveCurrentChat()" style="background-color: #6c757d;">Quitter</button>
+                </div>
+                
+                <!-- Actions Advisor -->
+                <div id="advisorActions" style="display: none; margin-top: 10px;">
+                    <button onclick="closeCurrentChat()" style="background-color: #dc3545;">Fermer le chat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>
+    <script>
+        let socket = null;
+        let currentUser = null;
+        let currentChat = null;
+        
+        function updateStatus(message, isConnected) {
+            const statusDiv = document.getElementById('statusDiv');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+        }
+        
+        function authenticate() {
+            const token = document.getElementById('tokenInput').value.trim();
+            
+            if (!token) {
+                alert('Veuillez entrer un token JWT');
+                return;
+            }
+            
+            updateStatus('🔄 Connexion en cours...', false);
+            
+            // Connexion Socket.IO
+            socket = io('http://localhost:3000/chat', {
+                auth: { token }
+            });
+            
+            socket.on('connect', () => {
+                console.log('Connecté au serveur WebSocket');
+            });
+            
+            socket.on('connected', (data) => {
+                currentUser = data.user;
+                updateStatus(`✅ Connecté en tant que ${data.user.firstname} ${data.user.lastname} (${data.user.role})`, true);
+                
+                // Afficher la section chat
+                document.getElementById('chatSection').style.display = 'block';
+                
+                // Afficher/cacher les sections selon le rôle
+                if (data.user.role === 'ADVISOR') {
+                    document.getElementById('createChatSection').style.display = 'none';
+                    document.getElementById('waitingChatsSection').style.display = 'block';
+                } else {
+                    document.getElementById('createChatSection').style.display = 'block';
+                    document.getElementById('waitingChatsSection').style.display = 'none';
+                }
+            });
+            
+            socket.on('error', (error) => {
+                updateStatus(`❌ Erreur: ${error.message}`, false);
+                disconnect();
+            });
+            
+            socket.on('new_message', (data) => {
+                if (currentChat && data.message.chatId === currentChat.id) {
+                    addMessageToUI(data.message);
+                }
+            });
+            
+            socket.on('advisor_assigned', (data) => {
+                alert(`Un advisor a pris en charge votre chat: ${data.advisor.firstname} ${data.advisor.lastname}`);
+                if (currentChat && currentChat.id === data.chat.id) {
+                    loadChat(data.chat.id);
+                }
+            });
+            
+            socket.on('new_chat_waiting', (data) => {
+                if (currentUser && currentUser.role === 'ADVISOR') {
+                    alert('Nouveau chat en attente !');
+                    getWaitingChats();
+                }
+            });
+            
+            socket.on('chat_closed', (data) => {
+                alert(`Chat fermé par ${data.closedBy.firstname} ${data.closedBy.lastname}`);
+                if (currentChat && currentChat.id === data.chat.id) {
+                    leaveCurrentChat();
+                }
+            });
+            
+            socket.on('user_joined_chat', (data) => {
+                console.log('Utilisateur rejoint le chat:', data.user);
+            });
+            
+            socket.on('chat_joined', (data) => {
+                console.log('Chat rejoint avec succès:', data.chat);
+            });
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+            currentUser = null;
+            currentChat = null;
+            updateStatus('❌ Non connecté', false);
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('currentChatSection').style.display = 'none';
+        }
+        
+        async function createChat() {
+            const subject = document.getElementById('chatSubject').value.trim();
+            const initialMessage = document.getElementById('initialMessage').value.trim();
+            
+            try {
+                const response = await fetch('http://localhost:3000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${document.getElementById('tokenInput').value}`
+                    },
+                    body: JSON.stringify({
+                        subject: subject || undefined,
+                        initialMessage: initialMessage || undefined
+                    })
+                });
+                
+                if (response.ok) {
+                    const chat = await response.json();
+                    alert(`Chat créé avec succès! ID: ${chat.id}`);
+                    document.getElementById('chatSubject').value = '';
+                    document.getElementById('initialMessage').value = '';
+                    getMyChats();
+                } else {
+                    const error = await response.json();
+                    alert(`Erreur: ${error.message}`);
+                }
+            } catch (error) {
+                alert(`Erreur: ${error.message}`);
+            }
+        }
+        
+        function getWaitingChats() {
+            if (!socket) return;
+            socket.emit('get_waiting_chats');
+            
+            socket.once('waiting_chats', (data) => {
+                const list = document.getElementById('waitingChatsList');
+                if (data.chats.length === 0) {
+                    list.innerHTML = '<p>Aucun chat en attente</p>';
+                } else {
+                    list.innerHTML = data.chats.map(chat => `
+                        <div class="chat-item" onclick="assignChat('${chat.id}')">
+                            <strong>Chat #${chat.id.slice(-8)}</strong><br>
+                            Client: ${chat.client.firstname} ${chat.client.lastname}<br>
+                            Sujet: ${chat.subject || 'Aucun'}<br>
+                            Créé: ${new Date(chat.createdAt).toLocaleString()}
+                        </div>
+                    `).join('');
+                }
+            });
+        }
+        
+        async function getMyChats() {
+            try {
+                const response = await fetch('http://localhost:3000/chat/my-chats', {
+                    headers: {
+                        'Authorization': `Bearer ${document.getElementById('tokenInput').value}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const chats = await response.json();
+                    const list = document.getElementById('myChatsList');
+                    
+                    if (chats.length === 0) {
+                        list.innerHTML = '<p>Aucun chat</p>';
+                    } else {
+                        list.innerHTML = chats.map(chat => {
+                            const otherPerson = currentUser.role === 'CLIENT' ? chat.advisor : chat.client;
+                            const statusColor = chat.status === 'WAITING' ? '#ffc107' : 
+                                              chat.status === 'IN_PROGRESS' ? '#28a745' : '#6c757d';
+                            
+                            return `
+                                <div class="chat-item" onclick="loadChat('${chat.id}')">
+                                    <strong>Chat #${chat.id.slice(-8)}</strong>
+                                    <span style="background-color: ${statusColor}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; float: right;">${chat.status}</span><br>
+                                    ${currentUser.role === 'CLIENT' ? 'Advisor' : 'Client'}: ${otherPerson ? `${otherPerson.firstname} ${otherPerson.lastname}` : 'Non assigné'}<br>
+                                    Sujet: ${chat.subject || 'Aucun'}<br>
+                                    Créé: ${new Date(chat.createdAt).toLocaleString()}
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(`Erreur: ${error.message}`);
+                }
+            } catch (error) {
+                alert(`Erreur: ${error.message}`);
+            }
+        }
+        
+        async function loadChat(chatId) {
+            try {
+                const response = await fetch(`http://localhost:3000/chat/${chatId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${document.getElementById('tokenInput').value}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentChat = await response.json();
+                    
+                    // Rejoindre le chat via Socket.IO
+                    socket.emit('join_chat', { chatId: currentChat.id });
+                    
+                    // Afficher les informations du chat
+                    const otherPerson = currentUser.role === 'CLIENT' ? currentChat.advisor : currentChat.client;
+                    document.getElementById('currentChatTitle').textContent = `💬 Chat #${currentChat.id.slice(-8)}`;
+                    document.getElementById('currentChatInfo').innerHTML = `
+                        <strong>Statut:</strong> ${currentChat.status}<br>
+                        <strong>Sujet:</strong> ${currentChat.subject || 'Aucun'}<br>
+                        <strong>${currentUser.role === 'CLIENT' ? 'Advisor' : 'Client'}:</strong> ${otherPerson ? `${otherPerson.firstname} ${otherPerson.lastname}` : 'Non assigné'}
+                    `;
+                    
+                    // Afficher les messages
+                    const messagesDiv = document.getElementById('messagesDiv');
+                    messagesDiv.innerHTML = '';
+                    
+                    if (currentChat.messages && currentChat.messages.length > 0) {
+                        currentChat.messages.forEach(message => {
+                            addMessageToUI(message);
+                        });
+                    } else {
+                        messagesDiv.innerHTML = '<p style="color: #666; text-align: center;">Aucun message dans ce chat</p>';
+                    }
+                    
+                    // Afficher la section du chat
+                    document.getElementById('currentChatSection').style.display = 'block';
+                    
+                    // Afficher les actions advisor si applicable
+                    if (currentUser.role === 'ADVISOR' && currentChat.status !== 'CLOSED') {
+                        document.getElementById('advisorActions').style.display = 'block';
+                    } else {
+                        document.getElementById('advisorActions').style.display = 'none';
+                    }
+                    
+                } else {
+                    const error = await response.json();
+                    alert(`Erreur: ${error.message}`);
+                }
+            } catch (error) {
+                alert(`Erreur: ${error.message}`);
+            }
+        }
+        
+        function assignChat(chatId) {
+            if (!socket) return;
+            
+            socket.emit('assign_chat', { chatId });
+            
+            socket.once('chat_assignment_confirmed', (data) => {
+                alert('Chat assigné avec succès !');
+                getWaitingChats();
+                getMyChats();
+                loadChat(chatId);
+            });
+        }
+        
+        function sendMessage() {
+            if (!currentChat || !socket) return;
+            
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value.trim();
+            
+            if (!content) return;
+            
+            socket.emit('send_message', {
+                chatId: currentChat.id,
+                content: content
+            });
+            
+            messageInput.value = '';
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function addMessageToUI(message) {
+            const messagesDiv = document.getElementById('messagesDiv');
+            const isOwn = message.authorId === currentUser.id;
+            
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${isOwn ? 'own' : 'other'}`;
+            messageEl.innerHTML = `
+                <div class="time">${new Date(message.createdAt).toLocaleTimeString()}</div>
+                <div class="author">${message.author.firstname} ${message.author.lastname} (${message.author.role})</div>
+                <div class="content">${message.content}</div>
+            `;
+            
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function leaveCurrentChat() {
+            if (currentChat && socket) {
+                socket.emit('leave_chat', { chatId: currentChat.id });
+            }
+            
+            currentChat = null;
+            document.getElementById('currentChatSection').style.display = 'none';
+        }
+        
+        function closeCurrentChat() {
+            if (!currentChat || !socket) return;
+            
+            if (confirm('Êtes-vous sûr de vouloir fermer ce chat ?')) {
+                socket.emit('close_chat', { chatId: currentChat.id });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -16,7 +16,6 @@ export async function isRequestAuthenticated(request: NextRequest): Promise<bool
 
 export async function getRequestAuthToken(request: NextRequest): Promise<string | null> {
   try {
-    // Import here to avoid circular dependency
     const { getTokenFromCookies } = await import('./token-validation');
     return await getTokenFromCookies();
   } catch (error) {

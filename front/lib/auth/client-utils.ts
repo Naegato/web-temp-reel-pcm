@@ -1,8 +1,10 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+
 /**
- * Client-side utilities for authentication
- * These work alongside server actions but provide client-side helpers
+ * Client-side utilities for authentication using Next.js router
  */
 
 /**
@@ -18,25 +20,33 @@ export function isClientAuthenticated(): boolean {
 }
 
 /**
- * Redirect to login page from client-side
+ * Hook for client-side redirections using Next.js router
  */
-export function redirectToLogin(currentPath?: string) {
-  const loginUrl = new URL('/login', window.location.origin);
-  if (currentPath) {
-    loginUrl.searchParams.set('redirect', currentPath);
-  }
-  window.location.href = loginUrl.toString();
+export function useAuthRedirects() {
+  const router = useRouter();
+
+  const redirectToLogin = (currentPath?: string) => {
+    const loginPath = currentPath ? `/login?redirect=${encodeURIComponent(currentPath)}` : '/login';
+    router.replace(loginPath);
+  };
+
+  const redirectToHome = () => {
+    router.replace('/');
+  };
+
+  return { redirectToLogin, redirectToHome };
 }
 
 /**
- * Redirect to dashboard from client-side
+ * Get redirect URL from query parameters - hook version
  */
-export function redirectToDashboard() {
-  window.location.href = '/';
+export function useRedirectUrl(): string | null {
+  const searchParams = useSearchParams();
+  return searchParams.get('redirect');
 }
 
 /**
- * Get redirect URL from query parameters
+ * Get redirect URL from query parameters - non-hook version for backwards compatibility
  */
 export function getRedirectUrl(): string | null {
   if (typeof window === 'undefined') return null;

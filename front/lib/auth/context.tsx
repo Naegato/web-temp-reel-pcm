@@ -43,47 +43,18 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
   });
 
   /**
-   * Fetch user profile ONLY from /auth/profile endpoint using Next.js cookies
-   * This ensures data consistency and security
-   * Automatically handles invalid tokens
+   * Fetch user profile from client-side
    */
   const fetchUser = async (): Promise<User | null> => {
     try {
-      // Use the API route that calls our backend /auth/profile
-      const response = await fetch('/api/auth/profile', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store', // Always fetch fresh user data
-      });
-      
-      if (response.ok) {
-        const user = await response.json();
-        
-        // Validate that we received a proper user object with required fields
-        if (user && user.id && user.email && user.firstname && user.lastname) {
-          return user;
-        } else {
-          console.error('Invalid user data received from /auth/profile:', user);
-          
-          // Clean up invalid token if data is malformed
-          await cleanupInvalidToken();
-          return null;
-        }
-      } else if (response.status === 401 || response.status === 403) {
-        // Token is invalid or expired
-        console.log('Authentication failed, cleaning up invalid token');
-        await cleanupInvalidToken();
-        return null;
-      } else {
-        console.error('Failed to fetch user profile:', response.status, response.statusText);
+      const response = await fetch('/api/auth/profile');
+      if (!response.ok) {
         return null;
       }
+      const data = await response.json();
+      return data;
     } catch (error) {
-      console.error('Error fetching user from /auth/profile:', error);
-      
-      // On network error, don't clean up token as it might be temporary
+      console.error('Error fetching user:', error);
       return null;
     }
   };
@@ -164,6 +135,8 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
         isLoading: false,
         isAuthenticated: false,
       });
+      // Redirect to login after successful logout
+      router.replace('/login');
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear the state even if server logout fails
@@ -172,6 +145,8 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
         isLoading: false,
         isAuthenticated: false,
       });
+      // Redirect to login even on error
+      router.replace('/login');
     }
   };
 
