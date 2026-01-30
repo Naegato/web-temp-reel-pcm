@@ -73,6 +73,11 @@ async function handleRequest(
       }
     });
     
+    // Add CORS headers
+    proxyResponse.headers.set('Access-Control-Allow-Origin', '*');
+    proxyResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    proxyResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
     return proxyResponse;
   } catch (error) {
     console.error('API proxy error:', error);
@@ -83,9 +88,23 @@ async function handleRequest(
   }
 }
 
+// Handle OPTIONS requests for CORS preflight
+async function handleOptions(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400', // 24 hours
+    },
+  });
+}
+
 // Export all HTTP methods
 export const GET = handleRequest;
 export const POST = handleRequest;
 export const PUT = handleRequest;
 export const PATCH = handleRequest;
 export const DELETE = handleRequest;
+export const OPTIONS = handleOptions;

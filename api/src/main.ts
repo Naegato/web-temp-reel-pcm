@@ -5,6 +5,13 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // Enable CORS
+  app.enableCors({
+    origin: ['http://localhost:3000'], // Frontend URL (Next.js default port)
+    credentials: true,
+  });
+  
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
@@ -16,7 +23,7 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 4000);
 }
 
 bootstrap();

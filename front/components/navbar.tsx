@@ -1,6 +1,6 @@
 "use client";
 
-import { Book, LogOut, Menu, Sunset, Trees, User, Zap } from "lucide-react";
+import { Book, LogOut, Menu, Sunset, Trees, User, Zap, MessageCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth/context";
 
 import { cn } from "@/lib/utils";
@@ -145,7 +145,6 @@ const Navbar = ({
   className,
 }: NavbarProps) => {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
-  console.log(isAuthenticated, user);
 
   return (
     <section className={cn("py-4", className)}>
@@ -181,12 +180,18 @@ const Navbar = ({
                      <span className="text-sm text-muted-foreground">
                        Welcome, {user.firstname}
                      </span>
-                     <Button asChild variant="outline" size="sm">
-                       <Link href="/">Home</Link>
-                     </Button>
-                     <Button asChild variant="outline" size="sm">
-                       <Link href="/profile">Profile</Link>
-                     </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/">Home</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/chat">
+                          <MessageCircle className="size-4 mr-2" />
+                          Chat
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/profile">Profile</Link>
+                      </Button>
                      <Button
                        variant="outline"
                        size="sm"
@@ -263,12 +268,18 @@ const Navbar = ({
                                  {user.firstname} {user.lastname}
                                </span>
                              </div>
-                             <Button asChild variant="outline">
-                               <Link href="/">Home</Link>
-                             </Button>
-                             <Button asChild variant="outline">
-                               <Link href="/profile">Profile</Link>
-                             </Button>
+                              <Button asChild variant="outline">
+                                <Link href="/">Home</Link>
+                              </Button>
+                              <Button asChild variant="outline">
+                                <Link href="/chat">
+                                  <MessageCircle className="size-4 mr-2" />
+                                  Chat
+                                </Link>
+                              </Button>
+                              <Button asChild variant="outline">
+                                <Link href="/profile">Profile</Link>
+                              </Button>
                              <Button
                                variant="outline"
                                onClick={logout}

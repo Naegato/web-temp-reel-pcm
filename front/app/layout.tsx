@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/navbar';
 import { Toaster } from '@/components/ui/sonner';
 import { ClientAuthProvider } from '@/components/providers/auth-provider';
+import { ChatProvider } from '@/lib/chat/context';
 import { getCurrentUser } from '@/lib/auth/server-utils';
 import type { Metadata } from "next";
 import "./globals.css";
@@ -24,9 +25,11 @@ export default async function RootLayout({
         className="antialiased relative"
       >
         <ClientAuthProvider initialUser={initialUser}>
-          <Navbar className="fixed top-0 w-full h-fit" />
-          {children}
-          <Toaster />
+          <ChatProvider>
+            <Navbar className="fixed top-0 w-full h-fit" />
+            {children}
+            <Toaster />
+          </ChatProvider>
         </ClientAuthProvider>
       </body>
     </html>

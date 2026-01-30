@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-const TOKEN_COOKIE_NAME = 'auth-token';
+const TOKEN_COOKIE_NAME = 'auth_token';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 /**
@@ -14,12 +14,12 @@ export async function validateTokenAndCleanup(): Promise<boolean> {
     const tokenCookie = cookieStore.get(TOKEN_COOKIE_NAME);
     
     if (!tokenCookie?.value) {
-      console.log('No token found in cookies');
+      // No token in cookies
       return false;
     }
 
     const token = tokenCookie.value;
-    console.log('Validating token with backend...');
+    // Validating token with backend
 
     // Call backend API to validate token
     const response = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -31,10 +31,10 @@ export async function validateTokenAndCleanup(): Promise<boolean> {
     });
 
     if (response.ok) {
-      console.log('Token validation successful');
+      // Token valid
       return true;
     } else {
-      console.log('Token validation failed:', response.status, response.statusText);
+      // Token invalid
       
       // Token is invalid, delete it from cookies
       await deleteInvalidToken();
@@ -56,7 +56,7 @@ async function deleteInvalidToken(): Promise<void> {
   try {
     const cookieStore = await cookies();
     cookieStore.delete(TOKEN_COOKIE_NAME);
-    console.log('Invalid token deleted from cookies');
+    // Token deleted
   } catch (error) {
     console.error('Error deleting invalid token:', error);
   }

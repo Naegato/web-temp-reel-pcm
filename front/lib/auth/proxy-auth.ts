@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 
-const TOKEN_COOKIE_NAME = 'auth-token';
+const TOKEN_COOKIE_NAME = 'auth_token';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 /**

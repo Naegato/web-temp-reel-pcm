@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatStatus, Role } from 'src/generated/prisma/client';
 import { CreateChatDto, SendMessageDto, ChatResponseDto, MessageResponseDto } from './dto';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService
+  ) {}
+
+  private chatGateway: any;
 
   /**
    * Créer un nouveau chat (seuls les clients peuvent créer des chats)
@@ -47,7 +51,18 @@ export class ChatService {
       });
     }
 
-    return this.formatChatResponse(chat);
+    const formattedChat = this.formatChatResponse(chat);
+
+    // Notifier les advisors qu'un nouveau chat est disponible
+    try {
+      if (this.chatGateway) {
+        await this.chatGateway.notifyNewChatToAdvisors(formattedChat);
+      }
+    } catch (error) {
+      console.warn('Failed to notify advisors of new chat:', error.message);
+    }
+
+    return formattedChat;
   }
 
   /**
@@ -306,6 +321,13 @@ export class ChatService {
     });
 
     return this.formatMessageResponse(message);
+  }
+
+  /**
+   * Injecter le gateway pour éviter la dépendance circulaire
+   */
+  setChatGateway(gateway: any) {
+    this.chatGateway = gateway;
   }
 
   /**

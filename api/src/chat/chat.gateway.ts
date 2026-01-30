@@ -27,7 +27,7 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // En production, spécifiez l'origine exacte
+    origin: ['http://localhost:3000'], // Frontend Next.js
     credentials: true,
   },
   namespace: '/chat',
@@ -43,13 +43,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatService: ChatService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-  ) {}
+  ) {
+    // Injecter ce gateway dans le service pour éviter la dépendance circulaire
+    this.chatService.setChatGateway(this);
+  }
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
+      this.logger.debug(`🔌 WebSocket connection attempt from ${client.id}`);
+      this.logger.debug(`🔌 Headers:`, client.handshake.headers);
+      this.logger.debug(`🔌 Auth:`, client.handshake.auth);
+      
       // Extraire et vérifier le token JWT
       const token = this.extractTokenFromHandshake(client);
+      this.logger.debug(`🔌 Extracted token: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+      
       if (!token) {
+        this.logger.error(`🔌 Token manquant pour ${client.id}`);
         throw new UnauthorizedException('Token manquant');
       }
 
@@ -87,7 +97,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
 
     } catch (error) {
-      this.logger.error(`Erreur d'authentification: ${error.message}`);
+      this.logger.error(`🔌 Erreur d'authentification pour ${client.id}: ${error.message}`);
+      this.logger.error(`🔌 Error stack:`, error.stack);
       client.emit('error', { message: 'Authentification échouée' });
       client.disconnect();
     }
@@ -335,14 +346,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private extractTokenFromHandshake(client: Socket): string | null {
-    // Extraire le token de l'autorisation ou des query params
+    // Priorité 1: Token dans auth (envoyé par le client Socket.IO)
+    const tokenFromAuth = client.handshake.auth?.token as string;
+    if (tokenFromAuth) {
+      return tokenFromAuth;
+    }
+
+    // Priorité 2: Token dans les headers Authorization
     const authHeader = client.handshake.headers.authorization;
-    const tokenFromQuery = client.handshake.query.token as string;
-    
     if (authHeader && authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
     
+    // Priorité 3: Token dans les query params (fallback)
+    const tokenFromQuery = client.handshake.query.token as string;
     if (tokenFromQuery) {
       return tokenFromQuery;
     }

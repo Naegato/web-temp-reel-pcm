@@ -13,7 +13,7 @@ export async function getCurrentUser(): Promise<User | null> {
     // First, validate the token (this will delete invalid tokens)
     const isValidToken = await validateTokenAndCleanup();
     if (!isValidToken) {
-      console.log('No valid auth token found');
+      // No valid auth token found
       return null;
     }
 
@@ -39,11 +39,7 @@ export async function getCurrentUser(): Promise<User | null> {
       return null;
     }
 
-    console.log('Successfully fetched user from /auth/profile:', {
-      id: user.id,
-      email: user.email,
-      name: `${user.firstname} ${user.lastname}`
-    });
+    // User fetched successfully
 
     return user;
   } catch (error) {

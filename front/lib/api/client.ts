@@ -3,6 +3,8 @@
  * Server-side authentication is handled separately through actions
  */
 
+import { Role } from '@/lib/types/chat';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface ApiResponse<T = any> {
@@ -32,6 +34,7 @@ export interface User {
   email: string;
   firstname: string;
   lastname: string;
+  role: Role;
 }
 
 class ApiClient {
