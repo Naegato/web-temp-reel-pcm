@@ -2,9 +2,11 @@
 
 ## Lancement
 
-/api:
+### /api:
+```
+cp .env.example .env
 
-dc up -d
+docker compose up -d
 
 pnpm i
 
@@ -13,15 +15,16 @@ npx prisma migrate dev
 npx prisma db seed
 
 pnpm dev
+```
 
-
-/front
-
+### /front
+```
 pnpm i
 pnpm dev
+```
 
 
-
+## INFORMATION
 
 Password: 123
 
