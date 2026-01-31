@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Message, Chat, ClientChat } from '@/lib/auth/types';
+import { Message, Chat, ClientChat, Role } from '@/lib/auth/types';
 import { getSocket, joinAdvisorGlobalChat, joinUserAdvisorChat, sendMessage, onNewMessage, offNewMessage } from '@/lib/socket';
 import { connectChatsSSE } from '@/lib/sse';
 
@@ -37,6 +37,8 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
   const globalMessagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef(getSocket(token));
 
+  console.log(globalMessages);
+
   // SSE for new client chats
   useEffect(() => {
     const disconnect = connectChatsSSE(token, (event) => {
@@ -64,6 +66,7 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
     const socket = socketRef.current;
 
     onNewMessage(socket, (message) => {
+      console.log('New message received:', message);
       if (message.chatId === globalChat.id) {
         setGlobalMessages((prev) => [...prev, message]);
       } else {
@@ -199,23 +202,31 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
         <h2 className="p-2 font-bold border-b">Chat Global Advisors</h2>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {globalMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
-            >
+          {globalMessages.map((msg) => {
+            const isAdmin = msg.sender.role === Role.ADMIN;
+            const isMe = msg.senderId === currentUserId;
+            return (
               <div
-                className={`max-w-[90%] p-3 rounded-lg ${
-                  msg.senderId === currentUserId
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200'
-                }`}
+                key={msg.id}
+                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="text-sm opacity-70">{msg.sender.email}</p>
-                <p>{msg.content}</p>
+                <div
+                  className={`max-w-[90%] p-3 rounded-lg ${
+                    isAdmin
+                      ? 'bg-red-500 text-white'
+                      : isMe
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200'
+                  }`}
+                >
+                  <p className={`text-sm ${isAdmin && !isMe ? 'text-red-100' : 'opacity-70'}`}>
+                    {msg.sender.email}
+                  </p>
+                  <p>{msg.content}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={globalMessagesEndRef} />
         </div>
 

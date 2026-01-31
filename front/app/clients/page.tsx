@@ -1,11 +1,11 @@
 import { getMyClients, getMe } from '@/lib/api-client/actions';
-import { Role } from '@/lib/auth/types';
+import { isAdvisorOrAdmin } from '@/lib/auth/types';
 import { redirect } from 'next/navigation';
 
 export default async function ClientsPage() {
   const user = await getMe();
 
-  if (!user || user.role !== Role.ADVISOR) {
+  if (!user || !isAdvisorOrAdmin(user.role)) {
     redirect('/');
   }
 

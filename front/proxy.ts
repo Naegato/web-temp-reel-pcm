@@ -1,12 +1,12 @@
+import { getApiClient } from '@/lib/api-client';
 import { Role } from '@/lib/auth/types';
 import { NextRequest, NextResponse } from 'next/server';
-import { getApiClient } from '@/lib/api-client';
 
 const authRoutes = ['/login', '/register'];
 const roleBasedRoutes: Record<string, Role[]> = {
-  '/': [Role.USER, Role.ADVISOR],
-  '/chat': [Role.USER, Role.ADVISOR],
-  '/connect': [Role.ADVISOR],
+  '/': [Role.USER, Role.ADVISOR, Role.ADMIN],
+  '/chat': [Role.USER, Role.ADVISOR, Role.ADMIN],
+  '/connect': [Role.ADVISOR, Role.ADMIN],
 };
 
 function getRequiredRoles(path: string): Role[] | null {
@@ -22,6 +22,10 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const token = request.cookies.get('token')?.value;
   const requiredRoles = getRequiredRoles(path);
+
+  console.log('Middleware - Path:', path);
+  console.log('Middleware - Token:', token);
+  console.log('Middleware - Required Roles:', requiredRoles);
 
   if (token) {
     const result = await getApiClient(token).me();

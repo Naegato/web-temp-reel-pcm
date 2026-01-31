@@ -168,13 +168,13 @@ app.get('/me', auth, async (req: AuthRequest, res) => {
   res.json(req.user);
 })
 
-// Exemple: endpoint protégé par role ADVISOR
-app.get('/admin', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+// Exemple: endpoint protégé par role ADVISOR ou ADMIN
+app.get('/admin', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   res.json({ message: 'Welcome advisor' });
 })
 
 // Connecter des clients à l'advisor
-app.post('/connect', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+app.post('/connect', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const schema = z.object({
     userIds: z.array(z.string()),
   });
@@ -193,7 +193,7 @@ app.post('/connect', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) =
 })
 
 // Users sans advisor assigné
-app.get('/users/unassigned', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+app.get('/users/unassigned', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const users = await prisma.user.findMany({
     where: { advisorId: null, role: 'USER' },
     select: { id: true, email: true, createdAt: true }
@@ -203,7 +203,7 @@ app.get('/users/unassigned', auth, roleGuard('ADVISOR'), async (req: AuthRequest
 })
 
 // Clients connectés à l'advisor
-app.get('/users/my-clients', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+app.get('/users/my-clients', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const clients = await prisma.user.findMany({
     where: { advisorId: req.user!.id },
     select: { id: true, email: true, createdAt: true }
@@ -228,17 +228,17 @@ app.get('/users/my-advisor', auth, async (req: AuthRequest, res) => {
 
 // ========== Chat REST Endpoints ==========
 
-// GET /chats/advisor-global - Récupère/crée le chat global (ADVISOR only)
-app.get('/chats/advisor-global', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+// GET /chats/advisor-global - Récupère/crée le chat global (ADVISOR/ADMIN only)
+app.get('/chats/advisor-global', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   let chat = await prisma.chat.findFirst({
     where: { type: 'GLOBAL_ADVISOR' },
-    include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true } } } } }
+    include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true, role: true } } } } }
   });
 
   if (!chat) {
     chat = await prisma.chat.create({
       data: { type: 'GLOBAL_ADVISOR' },
-      include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true } } } } }
+      include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true, role: true } } } } }
     });
   }
 
@@ -249,8 +249,8 @@ app.get('/chats/advisor-global', auth, roleGuard('ADVISOR'), async (req: AuthReq
 app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
   const userId = req.user!.id;
 
-  // Si c'est un advisor, on refuse (ils doivent utiliser /chats/my-clients)
-  if (req.user!.role === 'ADVISOR') {
+  // Si c'est un advisor/admin, on refuse (ils doivent utiliser /chats/my-clients)
+  if (req.user!.role === 'ADVISOR' || req.user!.role === 'ADMIN') {
     return res.status(400).json({ error: 'Advisors should use /chats/my-clients endpoint' });
   }
 
@@ -262,13 +262,13 @@ app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
 
   let chat = await prisma.chat.findUnique({
     where: { userId },
-    include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true } } } } }
+    include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true, role: true } } } } }
   });
 
   if (!chat) {
     chat = await prisma.chat.create({
       data: { type: 'USER_ADVISOR', userId },
-      include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true } } } } }
+      include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true, role: true } } } } }
     });
 
     // Notifie les advisors via SSE
@@ -282,8 +282,8 @@ app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
   res.json({ ...chat, messages: chat.messages.reverse() });
 });
 
-// GET /chats/my-clients - Liste des chats clients (ADVISOR only)
-app.get('/chats/my-clients', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+// GET /chats/my-clients - Liste des chats clients (ADVISOR/ADMIN only)
+app.get('/chats/my-clients', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const advisorId = req.user!.id;
 
   const chats = await prisma.chat.findMany({
@@ -320,7 +320,7 @@ app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
   const userRole = req.user!.role;
 
   if (chat.type === 'GLOBAL_ADVISOR') {
-    if (userRole !== 'ADVISOR') {
+    if (userRole !== 'ADVISOR' && userRole !== 'ADMIN') {
       return res.status(403).json({ error: 'Only advisors can access this chat' });
     }
   } else {
@@ -337,7 +337,7 @@ app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
     take: limit,
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     orderBy: { createdAt: 'desc' },
-    include: { sender: { select: { id: true, email: true } } }
+    include: { sender: { select: { id: true, email: true, role: true } } }
   });
 
   res.json({
@@ -400,8 +400,8 @@ app.get('/notifications/:id', auth, async (req: AuthRequest, res) => {
   res.json(updated);
 });
 
-// POST /notifications - Créer une notification (ADVISOR only)
-app.post('/notifications', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+// POST /notifications - Créer une notification (ADVISOR/ADMIN only)
+app.post('/notifications', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const schema = z.object({
     userId: z.string(),
     content: z.string().min(1)
@@ -452,7 +452,7 @@ app.delete('/notifications/:id', auth, async (req: AuthRequest, res) => {
 // ========== SSE pour nouveaux chats (Advisors) ==========
 
 // GET /chats/stream - SSE pour les advisors (nouveaux chats clients)
-app.get('/chats/stream', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+app.get('/chats/stream', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -499,7 +499,7 @@ io.on('connection', (socket: AuthSocket) => {
 
   // Join advisor global chat
   socket.on('join:advisor-global', async () => {
-    if (socket.user?.role !== 'ADVISOR') {
+    if (socket.user?.role !== 'ADVISOR' && socket.user?.role !== 'ADMIN') {
       socket.emit('error', { message: 'Only advisors can join this chat' });
       return;
     }
@@ -535,7 +535,7 @@ io.on('connection', (socket: AuthSocket) => {
     // Vérification des droits
     const userId = socket.user!.id;
     if (chat.type === 'GLOBAL_ADVISOR') {
-      if (socket.user?.role !== 'ADVISOR') {
+      if (socket.user?.role !== 'ADVISOR' && socket.user?.role !== 'ADMIN') {
         socket.emit('error', { message: 'Only advisors can join this chat' });
         return;
       }
@@ -581,7 +581,7 @@ io.on('connection', (socket: AuthSocket) => {
     // Vérification des droits
     const userId = socket.user!.id;
     if (chat.type === 'GLOBAL_ADVISOR') {
-      if (socket.user?.role !== 'ADVISOR') {
+      if (socket.user?.role !== 'ADVISOR' && socket.user?.role !== 'ADMIN') {
         socket.emit('error', { message: 'Only advisors can send messages here' });
         return;
       }
@@ -600,7 +600,7 @@ io.on('connection', (socket: AuthSocket) => {
         chatId,
         senderId: userId
       },
-      include: { sender: { select: { id: true, email: true } } }
+      include: { sender: { select: { id: true, email: true, role: true } } }
     });
 
     io.to(`chat:${chatId}`).emit('message:new', message);

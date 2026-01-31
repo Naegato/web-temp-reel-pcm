@@ -1,5 +1,5 @@
 import { getMe, getToken, getMyClients } from '@/lib/api-client/actions';
-import { Role } from '@/lib/auth/types';
+import { isAdvisorOrAdmin } from '@/lib/auth/types';
 import { redirect } from 'next/navigation';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { CreateNotificationForm } from '@/components/notifications/CreateNotificationForm';
@@ -11,7 +11,7 @@ export default async function NotificationsPage() {
     redirect('/login');
   }
 
-  const isAdvisor = user.role === Role.ADVISOR;
+  const isAdvisor = isAdvisorOrAdmin(user.role);
   const clients = isAdvisor ? await getMyClients() : null;
 
   return (

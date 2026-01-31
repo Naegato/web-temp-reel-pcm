@@ -2,7 +2,7 @@
 
 import { login } from '@/lib/api-client/actions';
 import { useAuth } from '@/lib/auth/context';
-import { Role } from '@/lib/auth/types';
+import { isAdvisorOrAdmin } from '@/lib/auth/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { NotificationLink } from '@/components/notifications/NotificationLink';
@@ -23,7 +23,7 @@ export const NavBar = () => {
         <li>
           <NotificationLink />
         </li>
-        {user.role === Role.ADVISOR && <>
+        {isAdvisorOrAdmin(user.role) && <>
           <li>
             <Link href="/clients">Clients</Link>
           </li>

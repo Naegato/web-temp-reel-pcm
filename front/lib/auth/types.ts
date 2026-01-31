@@ -1,7 +1,12 @@
 export enum Role {
   USER = 'USER',
   ADVISOR = 'ADVISOR',
+  ADMIN = 'ADMIN',
 }
+
+export const isAdvisorOrAdmin = (role: Role): boolean => {
+  return role === Role.ADVISOR || role === Role.ADMIN;
+};
 
 export type User = {
   id: string;
@@ -29,6 +34,7 @@ export type Client = {
 export type MessageSender = {
   id: string;
   email: string;
+  role?: Role;
 };
 
 export type Message = {

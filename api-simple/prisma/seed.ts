@@ -8,9 +8,21 @@ async function main() {
   console.log(`Start seeding ...`)
 
   // Clear existing data
+  await prisma.notification.deleteMany()
   await prisma.message.deleteMany()
   await prisma.chat.deleteMany()
   await prisma.user.deleteMany()
+
+  // Create admin
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@test.test',
+      password: '123',
+      role: 'ADMIN',
+      verified: true,
+    },
+  })
+  console.log(`Created admin: ${admin.email}`)
 
   // Create advisors
   const advisor1 = await prisma.user.create({
