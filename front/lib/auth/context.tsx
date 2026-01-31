@@ -1,13 +1,8 @@
 'use client';
 
+import { User } from '@/lib/auth/types';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getMe } from '@/lib/api-client/actions';
-
-type User = {
-  id: string;
-  email: string;
-  role: string;
-};
 
 type AuthContextType = {
   user: User | null;
@@ -18,8 +13,8 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [ user, setUser ] = useState<User | null>(null);
+  const [ loading, setLoading ] = useState(true);
 
   const refresh = async () => {
     setLoading(true);
@@ -29,8 +24,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    refresh();
+    let cancelled = false;
+
+    async function loadUser() {
+      try {
+        setLoading(true);
+        console.log('Loading user...');
+        const result = await getMe();
+        console.log('User loaded:', result);
+        if (!cancelled) {
+          setUser(result);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
 
   return (
     <AuthContext.Provider value={{ user, loading, refresh }}>

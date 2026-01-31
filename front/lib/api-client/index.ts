@@ -1,3 +1,4 @@
+import { User, UnassignedUser, Advisor, Client } from '@/lib/auth/types';
 import { z } from 'zod';
 
 type ResponseError = {
@@ -39,11 +40,27 @@ export class ApiClient {
   }
 
   async register(email: string, password: string) {
-    return await this.post<{ email: string; password: string }, { id: string; email: string; role: string }>('register', { email, password });
+    return await this.post<{ email: string; password: string }, User>('register', { email, password });
   }
 
   async me() {
-    return await this.get<{ id: string; email: string; role: string }>('me');
+    return await this.get<User>('me');
+  }
+
+  async getUsersUnassigned() {
+    return await this.get<UnassignedUser[]>('users/unassigned');
+  }
+
+  async connectClientToAdvisor(userIds: string[]) {
+    return await this.post<{ userIds: string[] }, { message: string }>('connect', { userIds });
+  }
+
+  async getMyAdvisor() {
+    return await this.get<Advisor>('users/my-advisor');
+  }
+
+  async getMyClients() {
+    return await this.get<Client[]>('users/my-clients');
   }
 }
 

@@ -2,10 +2,14 @@
 
 import { getApiClient } from '@/lib/api-client';
 import { login } from '@/lib/api-client/actions';
+import { useAuth } from '@/lib/auth/context';
 import { useForm } from '@tanstack/react-form';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export function FormLogin() {
+  const { refresh } = useAuth();
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const form = useForm({
     defaultValues: {
@@ -34,12 +38,9 @@ export function FormLogin() {
           }
         } else {
           setError(null)
-          try {
-            await login(res.token, '/');
-          } catch (e) {
-            console.error('Login error:', e);
-            setError('An unexpected error occurred during login.');
-          }
+          await login(res.token);
+          await refresh();
+          router.push('/');
         }
       },
     },

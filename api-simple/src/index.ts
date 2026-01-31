@@ -123,8 +123,6 @@ app.post('/login', async (req, res) => {
     where: { email },
   });
 
-  console.log(user);
-
   if (user && !user.verified) {
     return res.status(403).json({ error: 'Email not verified' });
   }
@@ -185,6 +183,42 @@ app.post('/connect', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) =
   });
 
   res.json({ message: 'Clients connected' });
+})
+
+// Users sans advisor assigné
+app.get('/users/unassigned', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+  const users = await prisma.user.findMany({
+    where: { advisorId: null, role: 'USER' },
+    select: { id: true, email: true, createdAt: true }
+  });
+
+  console.log(users);
+
+  res.json(users);
+})
+
+// Clients connectés à l'advisor
+app.get('/users/my-clients', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+  const clients = await prisma.user.findMany({
+    where: { advisorId: req.user!.id },
+    select: { id: true, email: true, createdAt: true }
+  });
+
+  res.json(clients);
+})
+
+// Récupérer son advisor
+app.get('/users/my-advisor', auth, async (req: AuthRequest, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.id },
+    select: { advisor: { select: { id: true, email: true } } }
+  });
+
+  if (!user?.advisor) {
+    return res.status(404).json({ error: 'No advisor assigned' });
+  }
+
+  res.json(user.advisor);
 })
 
 // ========== Chat REST Endpoints ==========
