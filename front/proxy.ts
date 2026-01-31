@@ -1,56 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  isRequestAuthenticated, 
-  isAuthPath,
-  requiresAuth,
-  shouldExcludePath 
-} from '@/lib/auth/proxy-utils';
+import { getApiClient } from '@/lib/api-client';
+
+const protectedRoutes = ['/', '/chat'];
+const authRoutes = ['/login', '/register'];
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const path = request.nextUrl.pathname;
+  const token = request.cookies.get('token')?.value;
 
+  if (token) {
+    const result = await getApiClient(token).me();
 
-  if (shouldExcludePath(pathname)) {
-    return NextResponse.next();
-  }
-
-  const isAuthenticated = await isRequestAuthenticated(request);
-
-  const needsAuth = requiresAuth(pathname);
-  const isAuthRoute = isAuthPath(pathname);
-
-  if (needsAuth && !isAuthenticated) {
-    const loginUrl = new URL('/login', request.url);
-    // Add a redirect parameter to return to the original page after login
-    // Only add redirect if it's not the root path
-    if (pathname !== '/') {
-      loginUrl.searchParams.set('redirect', pathname);
+    if ('error' in result) {
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('token');
+      return response;
     }
-    return NextResponse.redirect(loginUrl);
+
+    if (authRoutes.includes(path)) {
+      return NextResponse.redirect(new URL('/', request.url));
+    } else {
+      return NextResponse.next();
+    }
   }
 
-  if (isAuthRoute && isAuthenticated) {
-    const homeUrl = new URL('/', request.url);
-    return NextResponse.redirect(homeUrl);
+  if (protectedRoutes.some(route => path === route || path.startsWith(route + '/')) && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next();
 }
 
-/**
- * Configure which routes the proxy should run on
- * Follows Next.js 16 proxy conventions
- */
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)  
-     * - favicon.ico (favicon file)
-     * - public folder files (images, etc.)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.ico$).*)',
+    '/',
+    '/chat/:path*',
+    '/login',
+    '/register',
   ],
-};
+}
