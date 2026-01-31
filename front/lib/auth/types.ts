@@ -59,3 +59,24 @@ export type ClientChat = {
   };
   messages: { id: string; content: string; createdAt: string }[];
 };
+
+export type Notification = {
+  id: string;
+  content: string;
+  read: boolean;
+  userId: string;
+  createdAt: string;
+};
+
+export type NewChatEvent = {
+  type: 'new_chat';
+  chat: {
+    id: string;
+    userId: string;
+    user: { id: string; email: string };
+  };
+};
+
+export type NotificationEvent =
+  | { type: 'init'; notifications: Notification[] }
+  | { type: 'new'; notification: Notification };

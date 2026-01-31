@@ -159,3 +159,42 @@ export async function getMyClientChats() {
 
   return result;
 }
+
+export async function getNotification(id: string) {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const result = await getApiClient(token).getNotification(id);
+
+  if ('error' in result) {
+    return null;
+  }
+
+  return result;
+}
+
+export async function deleteNotification(id: string) {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return { error: 'Not authenticated' };
+  }
+
+  return await getApiClient(token).deleteNotification(id);
+}
+
+export async function createNotification(userId: string, content: string) {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return { error: 'Not authenticated' };
+  }
+
+  return await getApiClient(token).createNotification(userId, content);
+}

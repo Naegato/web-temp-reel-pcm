@@ -1,4 +1,4 @@
-import { User, UnassignedUser, Advisor, Client, Chat, ClientChat, Message } from '@/lib/auth/types';
+import { User, UnassignedUser, Advisor, Client, Chat, ClientChat, Message, Notification } from '@/lib/auth/types';
 import { z } from 'zod';
 
 type ResponseError = {
@@ -82,6 +82,26 @@ export class ApiClient {
     if (limit) params.append('limit', limit.toString());
     if (params.toString()) url += `?${params.toString()}`;
     return await this.get<{ messages: Message[]; nextCursor: string | null }>(url);
+  }
+
+  async delete<T = never>(endpoint: string): Promise<T | ResponseError> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: 'DELETE',
+      headers: this.token ? { 'Authorization': `Bearer ${this.token}` } : {},
+    });
+    return response.json();
+  }
+
+  async getNotification(id: string) {
+    return await this.get<Notification>(`notifications/${id}`);
+  }
+
+  async deleteNotification(id: string) {
+    return await this.delete<{ message: string }>(`notifications/${id}`);
+  }
+
+  async createNotification(userId: string, content: string) {
+    return await this.post<{ userId: string; content: string }, Notification>('notifications', { userId, content });
   }
 }
 

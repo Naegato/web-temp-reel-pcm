@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Message, Chat, Advisor } from '@/lib/auth/types';
-import { getSocket, joinUserAdvisorChat, sendMessage, onNewMessage, onJoined, disconnectSocket } from '@/lib/socket';
+import { getSocket, joinUserAdvisorChat, sendMessage, onNewMessage, onJoined, offNewMessage } from '@/lib/socket';
 
 type Props = {
   token: string;
@@ -30,7 +30,7 @@ export function ClientUserChatPage({ token, chat, advisor, currentUserId }: Prop
     joinUserAdvisorChat(socket, chat.id);
 
     return () => {
-      disconnectSocket();
+      offNewMessage(socket);
     };
   }, [token, chat.id]);
 

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Message, Chat, ClientChat } from '@/lib/auth/types';
-import { getSocket, joinAdvisorGlobalChat, joinUserAdvisorChat, sendMessage, onNewMessage, disconnectSocket } from '@/lib/socket';
+import { getSocket, joinAdvisorGlobalChat, joinUserAdvisorChat, sendMessage, onNewMessage, offNewMessage } from '@/lib/socket';
+import { connectChatsSSE } from '@/lib/sse';
 
 type Props = {
   token: string;
@@ -11,13 +12,14 @@ type Props = {
   currentUserId: string;
 };
 
-export function ClientAdvisorChatPage({ token, globalChat, clientChats, currentUserId }: Props) {
+export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialClientChats, currentUserId }: Props) {
+  const [clientChats, setClientChats] = useState<ClientChat[]>(initialClientChats);
   const [selectedClientChatId, setSelectedClientChatId] = useState<string | null>(
-    clientChats.length > 0 ? clientChats[0].id : null
+    initialClientChats.length > 0 ? initialClientChats[0].id : null
   );
   const [clientMessages, setClientMessages] = useState<Record<string, Message[]>>(() => {
     const initial: Record<string, Message[]> = {};
-    clientChats.forEach((chat) => {
+    initialClientChats.forEach((chat) => {
       initial[chat.id] = chat.messages.map((m) => ({
         ...m,
         chatId: chat.id,
@@ -33,9 +35,33 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats, currentU
 
   const clientMessagesEndRef = useRef<HTMLDivElement>(null);
   const globalMessagesEndRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef(getSocket(token));
 
+  // SSE for new client chats
   useEffect(() => {
-    const socket = getSocket(token);
+    const disconnect = connectChatsSSE(token, (event) => {
+      if (event.type === 'new_chat') {
+        const newChat: ClientChat = {
+          id: event.chat.id,
+          type: 'USER_ADVISOR',
+          userId: event.chat.userId,
+          createdAt: new Date().toISOString(),
+          user: event.chat.user,
+          messages: [],
+        };
+        setClientChats((prev) => [...prev, newChat]);
+        setClientMessages((prev) => ({ ...prev, [newChat.id]: [] }));
+        // Join the new chat room
+        joinUserAdvisorChat(socketRef.current, newChat.id);
+      }
+    });
+
+    return disconnect;
+  }, [token]);
+
+  // Socket.io for messages
+  useEffect(() => {
+    const socket = socketRef.current;
 
     onNewMessage(socket, (message) => {
       if (message.chatId === globalChat.id) {
@@ -50,14 +76,14 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats, currentU
 
     joinAdvisorGlobalChat(socket);
 
-    clientChats.forEach((chat) => {
+    initialClientChats.forEach((chat) => {
       joinUserAdvisorChat(socket, chat.id);
     });
 
     return () => {
-      disconnectSocket();
+      offNewMessage(socket);
     };
-  }, [token, globalChat.id, clientChats]);
+  }, [token, globalChat.id, initialClientChats]);
 
   useEffect(() => {
     clientMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -69,15 +95,13 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats, currentU
 
   const handleSendClient = () => {
     if (!clientInput.trim() || !selectedClientChatId) return;
-    const socket = getSocket(token);
-    sendMessage(socket, selectedClientChatId, clientInput);
+    sendMessage(socketRef.current, selectedClientChatId, clientInput);
     setClientInput('');
   };
 
   const handleSendGlobal = () => {
     if (!globalInput.trim()) return;
-    const socket = getSocket(token);
-    sendMessage(socket, globalChat.id, globalInput);
+    sendMessage(socketRef.current, globalChat.id, globalInput);
     setGlobalInput('');
   };
 

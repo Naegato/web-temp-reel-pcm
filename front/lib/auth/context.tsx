@@ -2,10 +2,11 @@
 
 import { User } from '@/lib/auth/types';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getMe } from '@/lib/api-client/actions';
+import { getMe, getToken } from '@/lib/api-client/actions';
 
 type AuthContextType = {
   user: User | null;
+  token: string | null;
   loading: boolean;
   refresh: () => Promise<void>;
 };
@@ -13,13 +14,15 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [ user, setUser ] = useState<User | null>(null);
-  const [ loading, setLoading ] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
     setLoading(true);
-    const result = await getMe();
+    const [result, tokenResult] = await Promise.all([getMe(), getToken()]);
     setUser(result);
+    setToken(tokenResult);
     setLoading(false);
   };
 
@@ -29,11 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function loadUser() {
       try {
         setLoading(true);
-        console.log('Loading user...');
-        const result = await getMe();
-        console.log('User loaded:', result);
+        const [result, tokenResult] = await Promise.all([getMe(), getToken()]);
         if (!cancelled) {
           setUser(result);
+          setToken(tokenResult);
         }
       } finally {
         if (!cancelled) {
@@ -49,9 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-
   return (
-    <AuthContext.Provider value={{ user, loading, refresh }}>
+    <AuthContext.Provider value={{ user, token, loading, refresh }}>
       {children}
     </AuthContext.Provider>
   );

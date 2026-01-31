@@ -1,8 +1,9 @@
 import 'dotenv/config';
 import crypto from 'crypto';
 import { createServer } from 'http';
+import { EventEmitter } from 'events';
 import { z } from 'zod';
-import { Prisma, PrismaClient, Role, ChatType, User } from '../prisma/generated/client';
+import { Prisma, PrismaClient, Role, ChatType, User, Notification } from '../prisma/generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import express, { Request, Response, NextFunction } from 'express';
 import nodemailer from 'nodemailer';
@@ -10,6 +11,12 @@ import jwt from 'jsonwebtoken';
 import { Server as SocketServer, Socket } from 'socket.io';
 import cors from 'cors';
 import ms from 'ms';
+
+// SSE Event emitter
+const sseEmitter = new EventEmitter();
+
+// Track connected users per chat room: Map<chatId, Set<userId>>
+const chatConnections = new Map<string, Set<string>>();
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -263,6 +270,13 @@ app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
       data: { type: 'USER_ADVISOR', userId },
       include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true } } } } }
     });
+
+    // Notifie les advisors via SSE
+    sseEmitter.emit('chat:new', {
+      id: chat.id,
+      userId: chat.userId,
+      user: { id: req.user!.id, email: req.user!.email }
+    });
   }
 
   res.json({ ...chat, messages: chat.messages.reverse() });
@@ -332,6 +346,128 @@ app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
   });
 });
 
+// ========== Notifications Endpoints ==========
+
+// GET /notifications - SSE stream des notifications
+app.get('/notifications', auth, async (req: AuthRequest, res) => {
+  const userId = req.user!.id;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  // Envoie les notifications existantes
+  const notifications = await prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' }
+  });
+  res.write(`data: ${JSON.stringify({ type: 'init', notifications })}\n\n`);
+
+  // Écoute les nouvelles notifications
+  const onNotification = (notification: Notification) => {
+    if (notification.userId === userId) {
+      res.write(`data: ${JSON.stringify({ type: 'new', notification })}\n\n`);
+    }
+  };
+
+  sseEmitter.on('notification', onNotification);
+
+  req.on('close', () => {
+    sseEmitter.off('notification', onNotification);
+  });
+});
+
+// GET /notifications/:id - Récupère et marque comme lu
+app.get('/notifications/:id', auth, async (req: AuthRequest, res) => {
+  const { id } = req.params;
+  const userId = req.user!.id;
+
+  const notification = await prisma.notification.findUnique({ where: { id } });
+
+  if (!notification) {
+    return res.status(404).json({ error: 'Notification not found' });
+  }
+
+  if (notification.userId !== userId) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  const updated = await prisma.notification.update({
+    where: { id },
+    data: { read: true }
+  });
+
+  res.json(updated);
+});
+
+// POST /notifications - Créer une notification (ADVISOR only)
+app.post('/notifications', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+  const schema = z.object({
+    userId: z.string(),
+    content: z.string().min(1)
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid request body', details: parsed.error.issues });
+  }
+
+  const { userId, content } = parsed.data;
+
+  // Vérifie que l'utilisateur cible existe
+  const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!targetUser) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const notification = await prisma.notification.create({
+    data: { userId, content }
+  });
+
+  sseEmitter.emit('notification', notification);
+
+  res.status(201).json(notification);
+});
+
+// DELETE /notifications/:id - Supprimer une notification
+app.delete('/notifications/:id', auth, async (req: AuthRequest, res) => {
+  const { id } = req.params;
+  const userId = req.user!.id;
+
+  const notification = await prisma.notification.findUnique({ where: { id } });
+
+  if (!notification) {
+    return res.status(404).json({ error: 'Notification not found' });
+  }
+
+  if (notification.userId !== userId) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  await prisma.notification.delete({ where: { id } });
+
+  res.json({ message: 'Notification deleted' });
+});
+
+// ========== SSE pour nouveaux chats (Advisors) ==========
+
+// GET /chats/stream - SSE pour les advisors (nouveaux chats clients)
+app.get('/chats/stream', auth, roleGuard('ADVISOR'), async (req: AuthRequest, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const onNewChat = (chat: { id: string; userId: string; user: { id: string; email: string } }) => {
+    res.write(`data: ${JSON.stringify({ type: 'new_chat', chat })}\n\n`);
+  };
+
+  sseEmitter.on('chat:new', onNewChat);
+
+  req.on('close', () => {
+    sseEmitter.off('chat:new', onNewChat);
+  });
+});
+
 // ========== HTTP Server + Socket.io ==========
 
 const httpServer = createServer(app);
@@ -374,6 +510,13 @@ io.on('connection', (socket: AuthSocket) => {
     }
 
     socket.join(`chat:${chat.id}`);
+
+    // Track user in chat
+    if (!chatConnections.has(chat.id)) {
+      chatConnections.set(chat.id, new Set());
+    }
+    chatConnections.get(chat.id)!.add(socket.user!.id);
+
     socket.emit('joined', { chatId: chat.id });
   });
 
@@ -406,6 +549,13 @@ io.on('connection', (socket: AuthSocket) => {
     }
 
     socket.join(`chat:${chat.id}`);
+
+    // Track user in chat
+    if (!chatConnections.has(chat.id)) {
+      chatConnections.set(chat.id, new Set());
+    }
+    chatConnections.get(chat.id)!.add(socket.user!.id);
+
     socket.emit('joined', { chatId: chat.id });
   });
 
@@ -454,10 +604,45 @@ io.on('connection', (socket: AuthSocket) => {
     });
 
     io.to(`chat:${chatId}`).emit('message:new', message);
+
+    // Create notification if recipient is not connected to the chat (USER_ADVISOR only)
+    if (chat.type === 'USER_ADVISOR') {
+      const connectedUsers = chatConnections.get(chatId) || new Set();
+      let recipientId: string | null = null;
+
+      if (chat.userId === userId) {
+        // Sender is the user -> recipient is the advisor
+        recipientId = chat.user?.advisorId || null;
+      } else {
+        // Sender is the advisor -> recipient is the user
+        recipientId = chat.userId;
+      }
+
+      if (recipientId && !connectedUsers.has(recipientId)) {
+        const notification = await prisma.notification.create({
+          data: {
+            userId: recipientId,
+            content: `Nouveau message de ${socket.user!.email}`
+          }
+        });
+        sseEmitter.emit('notification', notification);
+      }
+    }
   });
 
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${socket.user?.email}`);
+
+    // Remove user from all chat connections
+    if (socket.user) {
+      const userId = socket.user.id;
+      chatConnections.forEach((users, chatId) => {
+        users.delete(userId);
+        if (users.size === 0) {
+          chatConnections.delete(chatId);
+        }
+      });
+    }
   });
 });
 
