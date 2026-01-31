@@ -1,4 +1,4 @@
-import { User, UnassignedUser, Advisor, Client } from '@/lib/auth/types';
+import { User, UnassignedUser, Advisor, Client, Chat, ClientChat, Message } from '@/lib/auth/types';
 import { z } from 'zod';
 
 type ResponseError = {
@@ -61,6 +61,27 @@ export class ApiClient {
 
   async getMyClients() {
     return await this.get<Client[]>('users/my-clients');
+  }
+
+  async getAdvisorGlobalChat() {
+    return await this.get<Chat>('chats/advisor-global');
+  }
+
+  async getUserAdvisorChat() {
+    return await this.post<object, Chat>('chats/user-advisor', {});
+  }
+
+  async getMyClientChats() {
+    return await this.get<ClientChat[]>('chats/my-clients');
+  }
+
+  async getChatMessages(chatId: string, cursor?: string, limit?: number) {
+    let url = `chats/${chatId}/messages`;
+    const params = new URLSearchParams();
+    if (cursor) params.append('cursor', cursor);
+    if (limit) params.append('limit', limit.toString());
+    if (params.toString()) url += `?${params.toString()}`;
+    return await this.get<{ messages: Message[]; nextCursor: string | null }>(url);
   }
 }
 

@@ -103,3 +103,59 @@ export async function getMyClients() {
 
   return result;
 }
+
+export async function getToken() {
+  const cookiesStore = await cookies();
+  return cookiesStore.get('token')?.value ?? null;
+}
+
+export async function getAdvisorGlobalChat() {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const result = await getApiClient(token).getAdvisorGlobalChat();
+
+  if ('error' in result) {
+    return null;
+  }
+
+  return result;
+}
+
+export async function getUserAdvisorChat() {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const result = await getApiClient(token).getUserAdvisorChat();
+
+  if ('error' in result) {
+    return null;
+  }
+
+  return result;
+}
+
+export async function getMyClientChats() {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const result = await getApiClient(token).getMyClientChats();
+
+  if ('error' in result) {
+    return null;
+  }
+
+  return result;
+}

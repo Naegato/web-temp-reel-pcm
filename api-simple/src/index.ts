@@ -192,8 +192,6 @@ app.get('/users/unassigned', auth, roleGuard('ADVISOR'), async (req: AuthRequest
     select: { id: true, email: true, createdAt: true }
   });
 
-  console.log(users);
-
   res.json(users);
 })
 
