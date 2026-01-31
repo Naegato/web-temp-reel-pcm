@@ -12,10 +12,8 @@ import { Server as SocketServer, Socket } from 'socket.io';
 import cors from 'cors';
 import ms from 'ms';
 
-// SSE Event emitter
 const sseEmitter = new EventEmitter();
 
-// Track connected users per chat room: Map<chatId, Set<userId>>
 const chatConnections = new Map<string, Set<string>>();
 
 const transporter = nodemailer.createTransport({
@@ -27,7 +25,6 @@ const transporter = nodemailer.createTransport({
 const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter: pool });
 
-// Auth types
 interface AuthRequest extends Request {
   user?: User;
 }
@@ -42,7 +39,6 @@ interface AuthSocket extends Socket {
   user?: SocketUser;
 }
 
-// Auth middleware
 const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'No token provided' });
@@ -60,7 +56,6 @@ const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 };
 
-// Role guard
 const roleGuard = (...roles: Role[]) => (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user || !roles.includes(req.user.role)) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -163,17 +158,14 @@ app.get('/verify/:token', async (req, res) => {
   res.json({ message: 'Email verified' });
 })
 
-// Exemple: endpoint protégé (user connecté)
 app.get('/me', auth, async (req: AuthRequest, res) => {
   res.json(req.user);
 })
 
-// Exemple: endpoint protégé par role ADVISOR ou ADMIN
 app.get('/admin', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   res.json({ message: 'Welcome advisor' });
 })
 
-// Connecter des clients à l'advisor
 app.post('/connect', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const schema = z.object({
     userIds: z.array(z.string()),
@@ -192,7 +184,6 @@ app.post('/connect', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthReques
   res.json({ message: 'Clients connected' });
 })
 
-// Users sans advisor assigné
 app.get('/users/unassigned', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const users = await prisma.user.findMany({
     where: { advisorId: null, role: 'USER' },
@@ -202,7 +193,6 @@ app.get('/users/unassigned', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: Au
   res.json(users);
 })
 
-// Clients connectés à l'advisor
 app.get('/users/my-clients', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const clients = await prisma.user.findMany({
     where: { advisorId: req.user!.id },
@@ -212,7 +202,6 @@ app.get('/users/my-clients', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: Au
   res.json(clients);
 })
 
-// Récupérer son advisor
 app.get('/users/my-advisor', auth, async (req: AuthRequest, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
@@ -226,9 +215,6 @@ app.get('/users/my-advisor', auth, async (req: AuthRequest, res) => {
   res.json(user.advisor);
 })
 
-// ========== Chat REST Endpoints ==========
-
-// GET /chats/advisor-global - Récupère/crée le chat global (ADVISOR/ADMIN only)
 app.get('/chats/advisor-global', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   let chat = await prisma.chat.findFirst({
     where: { type: 'GLOBAL_ADVISOR' },
@@ -245,16 +231,13 @@ app.get('/chats/advisor-global', auth, roleGuard('ADVISOR', 'ADMIN'), async (req
   res.json({ ...chat, messages: chat.messages.reverse() });
 });
 
-// POST /chats/user-advisor - USER récupère/crée son chat avec advisor
 app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
   const userId = req.user!.id;
 
-  // Si c'est un advisor/admin, on refuse (ils doivent utiliser /chats/my-clients)
   if (req.user!.role === 'ADVISOR' || req.user!.role === 'ADMIN') {
     return res.status(400).json({ error: 'Advisors should use /chats/my-clients endpoint' });
   }
 
-  // Vérifie que le user a un advisor assigné
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { advisorId: true } });
   if (!user?.advisorId) {
     return res.status(400).json({ error: 'No advisor assigned' });
@@ -271,7 +254,6 @@ app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
       include: { messages: { take: 50, orderBy: { createdAt: 'desc' }, include: { sender: { select: { id: true, email: true, role: true } } } } }
     });
 
-    // Notifie les advisors via SSE
     sseEmitter.emit('chat:new', {
       id: chat.id,
       userId: chat.userId,
@@ -282,7 +264,6 @@ app.post('/chats/user-advisor', auth, async (req: AuthRequest, res) => {
   res.json({ ...chat, messages: chat.messages.reverse() });
 });
 
-// GET /chats/my-clients - Liste des chats clients (ADVISOR/ADMIN only)
 app.get('/chats/my-clients', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const advisorId = req.user!.id;
 
@@ -300,7 +281,6 @@ app.get('/chats/my-clients', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: Au
   res.json(chats);
 });
 
-// GET /chats/:chatId/messages - Historique messages (pagination)
 app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
   const chatId = req.params.chatId as string;
   const cursor = req.query.cursor as string | undefined;
@@ -315,7 +295,6 @@ app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
     return res.status(404).json({ error: 'Chat not found' });
   }
 
-  // Vérification des droits
   const userId = req.user!.id;
   const userRole = req.user!.role;
 
@@ -324,7 +303,6 @@ app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
       return res.status(403).json({ error: 'Only advisors can access this chat' });
     }
   } else {
-    // USER_ADVISOR: seul le user propriétaire ou son advisor peuvent accéder
     const isOwner = chat.userId === userId;
     const isAdvisor = chat.user?.advisorId === userId;
     if (!isOwner && !isAdvisor) {
@@ -346,9 +324,6 @@ app.get('/chats/:chatId/messages', auth, async (req: AuthRequest, res) => {
   });
 });
 
-// ========== Notifications Endpoints ==========
-
-// GET /notifications - SSE stream des notifications
 app.get('/notifications', auth, async (req: AuthRequest, res) => {
   const userId = req.user!.id;
 
@@ -356,14 +331,12 @@ app.get('/notifications', auth, async (req: AuthRequest, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  // Envoie les notifications existantes
   const notifications = await prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' }
   });
   res.write(`data: ${JSON.stringify({ type: 'init', notifications })}\n\n`);
 
-  // Écoute les nouvelles notifications
   const onNotification = (notification: Notification) => {
     if (notification.userId === userId) {
       res.write(`data: ${JSON.stringify({ type: 'new', notification })}\n\n`);
@@ -377,7 +350,6 @@ app.get('/notifications', auth, async (req: AuthRequest, res) => {
   });
 });
 
-// GET /notifications/:id - Récupère et marque comme lu
 app.get('/notifications/:id', auth, async (req: AuthRequest, res) => {
   const { id } = req.params;
   const userId = req.user!.id;
@@ -400,7 +372,6 @@ app.get('/notifications/:id', auth, async (req: AuthRequest, res) => {
   res.json(updated);
 });
 
-// POST /notifications - Créer une notification (ADVISOR/ADMIN only)
 app.post('/notifications', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const schema = z.object({
     userId: z.string(),
@@ -414,7 +385,6 @@ app.post('/notifications', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: Auth
 
   const { userId, content } = parsed.data;
 
-  // Vérifie que l'utilisateur cible existe
   const targetUser = await prisma.user.findUnique({ where: { id: userId } });
   if (!targetUser) {
     return res.status(404).json({ error: 'User not found' });
@@ -429,7 +399,6 @@ app.post('/notifications', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: Auth
   res.status(201).json(notification);
 });
 
-// DELETE /notifications/:id - Supprimer une notification
 app.delete('/notifications/:id', auth, async (req: AuthRequest, res) => {
   const { id } = req.params;
   const userId = req.user!.id;
@@ -449,15 +418,11 @@ app.delete('/notifications/:id', auth, async (req: AuthRequest, res) => {
   res.json({ message: 'Notification deleted' });
 });
 
-// ========== News Endpoints ==========
-
-// GET /news/stream - SSE stream des actualités
 app.get('/news/stream', auth, async (req: AuthRequest, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  // Envoie les actualités existantes
   const news = await prisma.news.findMany({
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -465,7 +430,6 @@ app.get('/news/stream', auth, async (req: AuthRequest, res) => {
   });
   res.write(`data: ${JSON.stringify({ type: 'init', news })}\n\n`);
 
-  // Écoute les nouvelles actualités
   const onNews = (newsItem: News & { author: { id: string; email: string } }) => {
     res.write(`data: ${JSON.stringify({ type: 'new', news: newsItem })}\n\n`);
   };
@@ -477,7 +441,6 @@ app.get('/news/stream', auth, async (req: AuthRequest, res) => {
   });
 });
 
-// POST /news - Créer une actualité (ADVISOR/ADMIN only)
 app.post('/news', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   const schema = z.object({
     title: z.string().min(1),
@@ -507,9 +470,6 @@ app.post('/news', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, 
   res.status(201).json(newsItem);
 });
 
-// ========== SSE pour nouveaux chats (Advisors) ==========
-
-// GET /chats/stream - SSE pour les advisors (nouveaux chats clients)
 app.get('/chats/stream', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -526,8 +486,6 @@ app.get('/chats/stream', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRe
   });
 });
 
-// ========== HTTP Server + Socket.io ==========
-
 const httpServer = createServer(app);
 const io = new SocketServer(httpServer, {
   cors: {
@@ -536,7 +494,6 @@ const io = new SocketServer(httpServer, {
   }
 });
 
-// Socket.io auth middleware
 io.use((socket: AuthSocket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -551,11 +508,7 @@ io.use((socket: AuthSocket, next) => {
   }
 });
 
-// Socket.io event handlers
 io.on('connection', (socket: AuthSocket) => {
-  console.log(`Socket connected: ${socket.user?.email}`);
-
-  // Join advisor global chat
   socket.on('join:advisor-global', async () => {
     if (socket.user?.role !== 'ADVISOR' && socket.user?.role !== 'ADMIN') {
       socket.emit('error', { message: 'Only advisors can join this chat' });
@@ -569,7 +522,6 @@ io.on('connection', (socket: AuthSocket) => {
 
     socket.join(`chat:${chat.id}`);
 
-    // Track user in chat
     if (!chatConnections.has(chat.id)) {
       chatConnections.set(chat.id, new Set());
     }
@@ -578,7 +530,6 @@ io.on('connection', (socket: AuthSocket) => {
     socket.emit('joined', { chatId: chat.id });
   });
 
-  // Join user-advisor chat
   socket.on('join:user-advisor', async (data: { chatId: string }) => {
     const chat = await prisma.chat.findUnique({
       where: { id: data.chatId },
@@ -590,7 +541,6 @@ io.on('connection', (socket: AuthSocket) => {
       return;
     }
 
-    // Vérification des droits
     const userId = socket.user!.id;
     if (chat.type === 'GLOBAL_ADVISOR') {
       if (socket.user?.role !== 'ADVISOR' && socket.user?.role !== 'ADMIN') {
@@ -608,7 +558,6 @@ io.on('connection', (socket: AuthSocket) => {
 
     socket.join(`chat:${chat.id}`);
 
-    // Track user in chat
     if (!chatConnections.has(chat.id)) {
       chatConnections.set(chat.id, new Set());
     }
@@ -617,7 +566,6 @@ io.on('connection', (socket: AuthSocket) => {
     socket.emit('joined', { chatId: chat.id });
   });
 
-  // Send message
   socket.on('message:send', async (data: { chatId: string; content: string }) => {
     const { chatId, content } = data;
 
@@ -636,7 +584,6 @@ io.on('connection', (socket: AuthSocket) => {
       return;
     }
 
-    // Vérification des droits
     const userId = socket.user!.id;
     if (chat.type === 'GLOBAL_ADVISOR') {
       if (socket.user?.role !== 'ADVISOR' && socket.user?.role !== 'ADMIN') {
@@ -663,16 +610,13 @@ io.on('connection', (socket: AuthSocket) => {
 
     io.to(`chat:${chatId}`).emit('message:new', message);
 
-    // Create notification if recipient is not connected to the chat (USER_ADVISOR only)
     if (chat.type === 'USER_ADVISOR') {
       const connectedUsers = chatConnections.get(chatId) || new Set();
       let recipientId: string | null = null;
 
       if (chat.userId === userId) {
-        // Sender is the user -> recipient is the advisor
         recipientId = chat.user?.advisorId || null;
       } else {
-        // Sender is the advisor -> recipient is the user
         recipientId = chat.userId;
       }
 
@@ -689,9 +633,6 @@ io.on('connection', (socket: AuthSocket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log(`Socket disconnected: ${socket.user?.email}`);
-
-    // Remove user from all chat connections
     if (socket.user) {
       const userId = socket.user.id;
       chatConnections.forEach((users, chatId) => {
@@ -704,6 +645,4 @@ io.on('connection', (socket: AuthSocket) => {
   });
 });
 
-httpServer.listen(4000, () =>
-  console.log(`Server ready at: http://localhost:4000`),
-);
+httpServer.listen(4000);

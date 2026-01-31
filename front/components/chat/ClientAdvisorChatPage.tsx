@@ -37,9 +37,6 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
   const globalMessagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef(getSocket(token));
 
-  console.log(globalMessages);
-
-  // SSE for new client chats
   useEffect(() => {
     const disconnect = connectChatsSSE(token, (event) => {
       if (event.type === 'new_chat') {
@@ -53,7 +50,6 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
         };
         setClientChats((prev) => [...prev, newChat]);
         setClientMessages((prev) => ({ ...prev, [newChat.id]: [] }));
-        // Join the new chat room
         joinUserAdvisorChat(socketRef.current, newChat.id);
       }
     });
@@ -61,12 +57,10 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
     return disconnect;
   }, [token]);
 
-  // Socket.io for messages
   useEffect(() => {
     const socket = socketRef.current;
 
     onNewMessage(socket, (message) => {
-      console.log('New message received:', message);
       if (message.chatId === globalChat.id) {
         setGlobalMessages((prev) => [...prev, message]);
       } else {
@@ -127,9 +121,7 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
 
   return (
     <div className="flex h-[calc(100vh-100px)]">
-      {/* Left section: Client chats */}
       <div className="flex-1 flex border-r">
-        {/* Client list */}
         <div className="w-48 border-r overflow-y-auto">
           <h2 className="p-2 font-bold border-b">Clients</h2>
           {clientChats.length === 0 ? (
@@ -149,7 +141,6 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
           )}
         </div>
 
-        {/* Client messages */}
         <div className="flex-1 flex flex-col">
           <h2 className="p-2 font-bold border-b">
             {selectedChat ? `Chat avec ${selectedChat.user.email}` : 'Sélectionnez un client'}
@@ -197,7 +188,6 @@ export function ClientAdvisorChatPage({ token, globalChat, clientChats: initialC
         </div>
       </div>
 
-      {/* Right section: Global advisor chat */}
       <div className="w-96 flex flex-col">
         <h2 className="p-2 font-bold border-b">Chat Global Advisors</h2>
 

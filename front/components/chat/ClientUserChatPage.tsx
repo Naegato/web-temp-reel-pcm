@@ -20,7 +20,6 @@ export function ClientUserChatPage({ token, chat, advisor, currentUserId }: Prop
     const socket = getSocket(token);
 
     onJoined(socket, () => {
-      console.log('Joined chat:', chat.id);
     });
 
     onNewMessage(socket, (message) => {

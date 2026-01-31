@@ -5,8 +5,7 @@ let socket: Socket | null = null;
 let currentToken: string | null = null;
 
 export const getSocket = (token: string): Socket => {
-  // Si le token a changé, déconnecter l'ancien socket
-  if (socket && currentToken !== token) {
+    if (socket && currentToken !== token) {
     socket.disconnect();
     socket = null;
   }
@@ -42,8 +41,7 @@ export const sendMessage = (socket: Socket, chatId: string, content: string) => 
 };
 
 export const onNewMessage = (socket: Socket, callback: (message: Message) => void) => {
-  // Enlever les anciens listeners avant d'en ajouter un nouveau
-  socket.off('message:new');
+    socket.off('message:new');
   socket.on('message:new', callback);
 };
 

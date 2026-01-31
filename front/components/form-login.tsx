@@ -49,8 +49,6 @@ export function FormLogin() {
     }
   });
 
-  console.log('Form state:', form.state.errorMap);
-
   return <form onSubmit={(e) => {
     e.preventDefault();
     form.handleSubmit(e);
@@ -60,8 +58,6 @@ export function FormLogin() {
         const isInvalid =
           field.state.meta.isTouched && !field.state.meta.isValid
         const errors = field.state.meta.errors;
-
-        console.log('Field state:', field.state);
 
         return <div className="border">
           <label htmlFor={field.name} className="border">{field.name}</label>

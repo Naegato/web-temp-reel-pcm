@@ -39,8 +39,7 @@ export function connectNotificationsSSE(
               const data = JSON.parse(line.slice(6)) as NotificationEvent;
               onEvent(data);
             } catch {
-              // Ignore parse errors
-            }
+                          }
           }
         }
       }
@@ -96,8 +95,7 @@ export function connectChatsSSE(
               const data = JSON.parse(line.slice(6)) as NewChatEvent;
               onEvent(data);
             } catch {
-              // Ignore parse errors
-            }
+                          }
           }
         }
       }
@@ -153,8 +151,7 @@ export function connectNewsSSE(
               const data = JSON.parse(line.slice(6)) as NewsEvent;
               onEvent(data);
             } catch {
-              // Ignore parse errors
-            }
+                          }
           }
         }
       }

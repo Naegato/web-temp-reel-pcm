@@ -23,10 +23,6 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const requiredRoles = getRequiredRoles(path);
 
-  console.log('Middleware - Path:', path);
-  console.log('Middleware - Token:', token);
-  console.log('Middleware - Required Roles:', requiredRoles);
-
   if (token) {
     const result = await getApiClient(token).me();
 
