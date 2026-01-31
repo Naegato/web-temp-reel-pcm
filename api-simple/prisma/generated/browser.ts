@@ -37,3 +37,8 @@ export type Message = Prisma.MessageModel
  * 
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model News
+ * 
+ */
+export type News = Prisma.NewsModel

@@ -1,4 +1,4 @@
-import { User, UnassignedUser, Advisor, Client, Chat, ClientChat, Message, Notification } from '@/lib/auth/types';
+import { User, UnassignedUser, Advisor, Client, Chat, ClientChat, Message, Notification, News } from '@/lib/auth/types';
 import { z } from 'zod';
 
 type ResponseError = {
@@ -102,6 +102,10 @@ export class ApiClient {
 
   async createNotification(userId: string, content: string) {
     return await this.post<{ userId: string; content: string }, Notification>('notifications', { userId, content });
+  }
+
+  async createNews(title: string, description: string, imageUrl?: string) {
+    return await this.post<{ title: string; description: string; imageUrl?: string }, News>('news', { title, description, imageUrl });
   }
 }
 

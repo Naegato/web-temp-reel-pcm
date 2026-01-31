@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { createServer } from 'http';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
-import { Prisma, PrismaClient, Role, ChatType, User, Notification } from '../prisma/generated/client';
+import { Prisma, PrismaClient, Role, ChatType, User, Notification, News } from '../prisma/generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import express, { Request, Response, NextFunction } from 'express';
 import nodemailer from 'nodemailer';
@@ -447,6 +447,64 @@ app.delete('/notifications/:id', auth, async (req: AuthRequest, res) => {
   await prisma.notification.delete({ where: { id } });
 
   res.json({ message: 'Notification deleted' });
+});
+
+// ========== News Endpoints ==========
+
+// GET /news/stream - SSE stream des actualités
+app.get('/news/stream', auth, async (req: AuthRequest, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  // Envoie les actualités existantes
+  const news = await prisma.news.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+    include: { author: { select: { id: true, email: true } } }
+  });
+  res.write(`data: ${JSON.stringify({ type: 'init', news })}\n\n`);
+
+  // Écoute les nouvelles actualités
+  const onNews = (newsItem: News & { author: { id: string; email: string } }) => {
+    res.write(`data: ${JSON.stringify({ type: 'new', news: newsItem })}\n\n`);
+  };
+
+  sseEmitter.on('news', onNews);
+
+  req.on('close', () => {
+    sseEmitter.off('news', onNews);
+  });
+});
+
+// POST /news - Créer une actualité (ADVISOR/ADMIN only)
+app.post('/news', auth, roleGuard('ADVISOR', 'ADMIN'), async (req: AuthRequest, res) => {
+  const schema = z.object({
+    title: z.string().min(1),
+    description: z.string().min(1),
+    imageUrl: z.string().url().optional()
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid request body', details: parsed.error.issues });
+  }
+
+  const { title, description, imageUrl } = parsed.data;
+
+  const newsItem = await prisma.news.create({
+    data: {
+      title,
+      description,
+      imageUrl,
+      authorId: req.user!.id
+    },
+    include: { author: { select: { id: true, email: true } } }
+  });
+
+  sseEmitter.emit('news', newsItem);
+
+  res.status(201).json(newsItem);
 });
 
 // ========== SSE pour nouveaux chats (Advisors) ==========

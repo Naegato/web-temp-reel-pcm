@@ -86,3 +86,17 @@ export type NewChatEvent = {
 export type NotificationEvent =
   | { type: 'init'; notifications: Notification[] }
   | { type: 'new'; notification: Notification };
+
+export type News = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  authorId: string;
+  createdAt: string;
+  author: { id: string; email: string };
+};
+
+export type NewsEvent =
+  | { type: 'init'; news: News[] }
+  | { type: 'new'; news: News };

@@ -23,6 +23,9 @@ export const NavBar = () => {
         <li>
           <NotificationLink />
         </li>
+        <li>
+          <Link href="/newsletter">Actualites</Link>
+        </li>
         {isAdvisorOrAdmin(user.role) && <>
           <li>
             <Link href="/clients">Clients</Link>

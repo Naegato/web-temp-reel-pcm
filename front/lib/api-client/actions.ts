@@ -198,3 +198,14 @@ export async function createNotification(userId: string, content: string) {
 
   return await getApiClient(token).createNotification(userId, content);
 }
+
+export async function createNews(title: string, description: string, imageUrl?: string) {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get('token')?.value;
+
+  if (!token) {
+    return { error: 'Not authenticated' };
+  }
+
+  return await getApiClient(token).createNews(title, description, imageUrl);
+}

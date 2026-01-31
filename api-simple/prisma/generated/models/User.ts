@@ -219,6 +219,7 @@ export type UserWhereInput = {
   chat?: Prisma.XOR<Prisma.ChatNullableScalarRelationFilter, Prisma.ChatWhereInput> | null
   sentMessages?: Prisma.MessageListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  news?: Prisma.NewsListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -236,6 +237,7 @@ export type UserOrderByWithRelationInput = {
   chat?: Prisma.ChatOrderByWithRelationInput
   sentMessages?: Prisma.MessageOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  news?: Prisma.NewsOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -256,6 +258,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   chat?: Prisma.XOR<Prisma.ChatNullableScalarRelationFilter, Prisma.ChatWhereInput> | null
   sentMessages?: Prisma.MessageListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  news?: Prisma.NewsListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -302,6 +305,7 @@ export type UserCreateInput = {
   chat?: Prisma.ChatCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -318,6 +322,7 @@ export type UserUncheckedCreateInput = {
   chat?: Prisma.ChatUncheckedCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUpdateInput = {
@@ -334,6 +339,7 @@ export type UserUpdateInput = {
   chat?: Prisma.ChatUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -350,6 +356,7 @@ export type UserUncheckedUpdateInput = {
   chat?: Prisma.ChatUncheckedUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -565,6 +572,20 @@ export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationsInput, Prisma.UserUpdateWithoutNotificationsInput>, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
 }
 
+export type UserCreateNestedOneWithoutNewsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNewsInput, Prisma.UserUncheckedCreateWithoutNewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNewsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutNewsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNewsInput, Prisma.UserUncheckedCreateWithoutNewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNewsInput
+  upsert?: Prisma.UserUpsertWithoutNewsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNewsInput, Prisma.UserUpdateWithoutNewsInput>, Prisma.UserUncheckedUpdateWithoutNewsInput>
+}
+
 export type UserCreateWithoutClientsInput = {
   id?: string
   email: string
@@ -578,6 +599,7 @@ export type UserCreateWithoutClientsInput = {
   chat?: Prisma.ChatCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutClientsInput = {
@@ -593,6 +615,7 @@ export type UserUncheckedCreateWithoutClientsInput = {
   chat?: Prisma.ChatUncheckedCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutClientsInput = {
@@ -613,6 +636,7 @@ export type UserCreateWithoutAdvisorInput = {
   chat?: Prisma.ChatCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutAdvisorInput = {
@@ -628,6 +652,7 @@ export type UserUncheckedCreateWithoutAdvisorInput = {
   chat?: Prisma.ChatUncheckedCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutAdvisorInput = {
@@ -664,6 +689,7 @@ export type UserUpdateWithoutClientsInput = {
   chat?: Prisma.ChatUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientsInput = {
@@ -679,6 +705,7 @@ export type UserUncheckedUpdateWithoutClientsInput = {
   chat?: Prisma.ChatUncheckedUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutAdvisorInput = {
@@ -725,6 +752,7 @@ export type UserCreateWithoutChatInput = {
   clients?: Prisma.UserCreateNestedManyWithoutAdvisorInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutChatInput = {
@@ -740,6 +768,7 @@ export type UserUncheckedCreateWithoutChatInput = {
   clients?: Prisma.UserUncheckedCreateNestedManyWithoutAdvisorInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutChatInput = {
@@ -771,6 +800,7 @@ export type UserUpdateWithoutChatInput = {
   clients?: Prisma.UserUpdateManyWithoutAdvisorNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChatInput = {
@@ -786,6 +816,7 @@ export type UserUncheckedUpdateWithoutChatInput = {
   clients?: Prisma.UserUncheckedUpdateManyWithoutAdvisorNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutSentMessagesInput = {
@@ -801,6 +832,7 @@ export type UserCreateWithoutSentMessagesInput = {
   clients?: Prisma.UserCreateNestedManyWithoutAdvisorInput
   chat?: Prisma.ChatCreateNestedOneWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -816,6 +848,7 @@ export type UserUncheckedCreateWithoutSentMessagesInput = {
   clients?: Prisma.UserUncheckedCreateNestedManyWithoutAdvisorInput
   chat?: Prisma.ChatUncheckedCreateNestedOneWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  news?: Prisma.NewsUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -847,6 +880,7 @@ export type UserUpdateWithoutSentMessagesInput = {
   clients?: Prisma.UserUpdateManyWithoutAdvisorNestedInput
   chat?: Prisma.ChatUpdateOneWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -862,6 +896,7 @@ export type UserUncheckedUpdateWithoutSentMessagesInput = {
   clients?: Prisma.UserUncheckedUpdateManyWithoutAdvisorNestedInput
   chat?: Prisma.ChatUncheckedUpdateOneWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -877,6 +912,7 @@ export type UserCreateWithoutNotificationsInput = {
   clients?: Prisma.UserCreateNestedManyWithoutAdvisorInput
   chat?: Prisma.ChatCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  news?: Prisma.NewsCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -892,6 +928,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   clients?: Prisma.UserUncheckedCreateNestedManyWithoutAdvisorInput
   chat?: Prisma.ChatUncheckedCreateNestedOneWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  news?: Prisma.NewsUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -923,6 +960,7 @@ export type UserUpdateWithoutNotificationsInput = {
   clients?: Prisma.UserUpdateManyWithoutAdvisorNestedInput
   chat?: Prisma.ChatUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  news?: Prisma.NewsUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -938,6 +976,87 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   clients?: Prisma.UserUncheckedUpdateManyWithoutAdvisorNestedInput
   chat?: Prisma.ChatUncheckedUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  news?: Prisma.NewsUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutNewsInput = {
+  id?: string
+  email: string
+  password: string
+  role?: $Enums.Role
+  verified?: boolean
+  verifyToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  advisor?: Prisma.UserCreateNestedOneWithoutClientsInput
+  clients?: Prisma.UserCreateNestedManyWithoutAdvisorInput
+  chat?: Prisma.ChatCreateNestedOneWithoutUserInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutNewsInput = {
+  id?: string
+  email: string
+  password: string
+  role?: $Enums.Role
+  verified?: boolean
+  verifyToken?: string | null
+  advisorId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clients?: Prisma.UserUncheckedCreateNestedManyWithoutAdvisorInput
+  chat?: Prisma.ChatUncheckedCreateNestedOneWithoutUserInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutNewsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNewsInput, Prisma.UserUncheckedCreateWithoutNewsInput>
+}
+
+export type UserUpsertWithoutNewsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNewsInput, Prisma.UserUncheckedUpdateWithoutNewsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNewsInput, Prisma.UserUncheckedCreateWithoutNewsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNewsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNewsInput, Prisma.UserUncheckedUpdateWithoutNewsInput>
+}
+
+export type UserUpdateWithoutNewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  advisor?: Prisma.UserUpdateOneWithoutClientsNestedInput
+  clients?: Prisma.UserUpdateManyWithoutAdvisorNestedInput
+  chat?: Prisma.ChatUpdateOneWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  advisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clients?: Prisma.UserUncheckedUpdateManyWithoutAdvisorNestedInput
+  chat?: Prisma.ChatUncheckedUpdateOneWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyAdvisorInput = {
@@ -964,6 +1083,7 @@ export type UserUpdateWithoutAdvisorInput = {
   chat?: Prisma.ChatUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAdvisorInput = {
@@ -979,6 +1099,7 @@ export type UserUncheckedUpdateWithoutAdvisorInput = {
   chat?: Prisma.ChatUncheckedUpdateOneWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  news?: Prisma.NewsUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutAdvisorInput = {
@@ -1001,12 +1122,14 @@ export type UserCountOutputType = {
   clients: number
   sentMessages: number
   notifications: number
+  news: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clients?: boolean | UserCountOutputTypeCountClientsArgs
   sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  news?: boolean | UserCountOutputTypeCountNewsArgs
 }
 
 /**
@@ -1040,6 +1163,13 @@ export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.NotificationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountNewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NewsWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1056,6 +1186,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   chat?: boolean | Prisma.User$chatArgs<ExtArgs>
   sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  news?: boolean | Prisma.User$newsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1104,6 +1235,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   chat?: boolean | Prisma.User$chatArgs<ExtArgs>
   sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  news?: boolean | Prisma.User$newsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1121,6 +1253,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     chat: Prisma.$ChatPayload<ExtArgs> | null
     sentMessages: Prisma.$MessagePayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    news: Prisma.$NewsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1531,6 +1664,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   chat<T extends Prisma.User$chatArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$chatArgs<ExtArgs>>): Prisma.Prisma__ChatClient<runtime.Types.Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   sentMessages<T extends Prisma.User$sentMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  news<T extends Prisma.User$newsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$newsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NewsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2072,6 +2206,30 @@ export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.news
+ */
+export type User$newsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the News
+   */
+  select?: Prisma.NewsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the News
+   */
+  omit?: Prisma.NewsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NewsInclude<ExtArgs> | null
+  where?: Prisma.NewsWhereInput
+  orderBy?: Prisma.NewsOrderByWithRelationInput | Prisma.NewsOrderByWithRelationInput[]
+  cursor?: Prisma.NewsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NewsScalarFieldEnum | Prisma.NewsScalarFieldEnum[]
 }
 
 /**
